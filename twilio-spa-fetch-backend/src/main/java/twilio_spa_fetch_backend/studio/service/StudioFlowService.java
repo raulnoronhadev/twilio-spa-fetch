@@ -27,9 +27,10 @@ public class StudioFlowService {
         List<FlowRecordDTO> dtoList = new ArrayList<>();
 
         for (Flow flowResource : flows) {
+            String flowSid = flowResource.getSid();
             FlowRecordDTO dto = new FlowRecordDTO(
                     flowResource.getAccountSid(),
-                    flowResource.getSid(),
+                    flowSid,
                     flowResource.getFriendlyName(),
                     java.util.Date.from(flowResource.getDateCreated().toInstant()),
                     flowResource.getDateUpdated() != null ? java.util.Date.from(flowResource.getDateUpdated().toInstant()) : null,
@@ -41,7 +42,7 @@ public class StudioFlowService {
                     flowResource.getErrors(),
                     flowResource.getWarnings(),
                     flowResource.getLinks(),
-                    flowResource.getDefinition()
+                    getDefinitionBySid(flowSid)
             );
             dtoList.add(dto);
         }
@@ -69,5 +70,11 @@ public class StudioFlowService {
                 flowResource.getDefinition()
         );
         return ResponseEntity.ok(dto);
+    }
+
+    public Object getDefinitionBySid(String flowSid) {
+        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+        Flow record = Flow.fetcher(flowSid).fetch();
+        return record.getDefinition();
     }
 }

@@ -22,5 +22,5 @@ public record FlowRecordDTO(
         List<Map<String, Object>> errors,
         List<Map<String, Object>> warnings,
         Map<String, String> links,
-        @JsonProperty("definition") Map<String, Object> definition
+        Object definition
 ) {}

@@ -27,4 +27,9 @@ public class StudioFlowController {
     public ResponseEntity<FlowRecordDTO> getFlowBySID(@PathVariable String flowSid) {
         return studioFlowService.getFlowBySid(flowSid);
     }
+
+    @GetMapping("/Flow/{flowSid}/definition")
+    public ResponseEntity<Object> getFlowDefinition(@PathVariable String flowSid) {
+        return ResponseEntity.ok(studioFlowService.getDefinitionBySid(flowSid));
+    }
 }
