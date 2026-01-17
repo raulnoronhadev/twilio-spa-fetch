@@ -1,10 +1,10 @@
-package twilio_spa_fetch;
+package twilio_spa_fetch_backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TwilioSpaFetchApplicationTests {
+class TwilioSpaFetchBackendApplicationTests {
 
 	@Test
 	void contextLoads() {
