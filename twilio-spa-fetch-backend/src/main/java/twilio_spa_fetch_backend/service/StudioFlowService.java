@@ -1,12 +1,11 @@
-package twilio_spa_fetch_backend.studio.service;
+package twilio_spa_fetch_backend.service;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.twilio.Twilio;
 import com.twilio.rest.studio.v2.Flow;
 import com.twilio.base.ResourceSet;
-import twilio_spa_fetch_backend.studio.dto.FlowRecordDTO;
+import twilio_spa_fetch_backend.dto.FlowRecordDTO;
 
 import java.util.ArrayList;
 import java.util.List;

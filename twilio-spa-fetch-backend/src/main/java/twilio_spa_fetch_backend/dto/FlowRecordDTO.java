@@ -1,18 +1,17 @@
-package twilio_spa_fetch_backend.studio.dto;
+package twilio_spa_fetch_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import tools.jackson.databind.JsonNode;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public record FlowRecordDTO(
-        @JsonProperty("account_sid") @NotBlank String accountSid,
+        @JsonProperty("account_sid") String accountSid,
         String sid,
         @JsonProperty("friendly_name") String friendlyName,
-        @JsonProperty("date_created") @NotBlank Date dateCreated,
+        @JsonProperty("date_created") Date dateCreated,
         @JsonProperty("date_updated") Date dateUpdated,
         String status,
         Integer revision,
