@@ -20,7 +20,6 @@ public class StudioFlowService {
     private String AUTH_TOKEN;
 
     public ResponseEntity<List<FlowRecordDTO>> findAllFlows() {
-        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         ResourceSet<Flow> flows = Flow.reader().read();
 
         List<FlowRecordDTO> dtoList = new ArrayList<>();

@@ -3,7 +3,6 @@ package twilio_spa_fetch_backend.service;
 import com.twilio.Twilio;
 import com.twilio.base.ResourceSet;
 import com.twilio.rest.api.v2010.account.IncomingPhoneNumber;
-import com.twilio.rest.routes.v2.PhoneNumber;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ public class PhoneNumberService {
     private String AUTH_TOKEN;
 
     public ResponseEntity<List<PhoneNumberDTO>> listAllPhoneNumbers() {
-        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         ResourceSet<IncomingPhoneNumber> incomingPhoneNumbers = IncomingPhoneNumber.reader().limit(50).read();
         List<PhoneNumberDTO> dtoList = new ArrayList<>();
         for (IncomingPhoneNumber phoneNumberResource : incomingPhoneNumbers) {
