@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import com.twilio.Twilio;
 import com.twilio.rest.studio.v2.Flow;
 import com.twilio.base.ResourceSet;
-import twilio_spa_fetch_backend.dto.FlowRecordDTO;
+import twilio_spa_fetch_backend.dto.FlowDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,20 +13,14 @@ import java.util.List;
 @Service
 public class StudioFlowService {
 
-    @Value("${twilio.account-sid}")
-    private String ACCOUNT_SID;
-
-    @Value("${twilio.auth-token}")
-    private String AUTH_TOKEN;
-
-    public ResponseEntity<List<FlowRecordDTO>> findAllFlows() {
+    public ResponseEntity<List<FlowDTO>> findAllFlows() {
         ResourceSet<Flow> flows = Flow.reader().read();
 
-        List<FlowRecordDTO> dtoList = new ArrayList<>();
+        List<FlowDTO> dtoList = new ArrayList<>();
 
         for (Flow flowResource : flows) {
             String flowSid = flowResource.getSid();
-            FlowRecordDTO dto = new FlowRecordDTO(
+            FlowDTO dto = new FlowDTO(
                     flowResource.getAccountSid(),
                     flowSid,
                     flowResource.getFriendlyName(),
@@ -48,10 +42,9 @@ public class StudioFlowService {
         return ResponseEntity.ok(dtoList);
     }
 
-    public ResponseEntity<FlowRecordDTO> getFlowBySid(String flowSid) {
-        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+    public ResponseEntity<FlowDTO> getFlowBySid(String flowSid) {
         Flow flowResource = Flow.fetcher(flowSid).fetch();
-        FlowRecordDTO dto = new FlowRecordDTO(
+        FlowDTO dto = new FlowDTO(
                 flowResource.getAccountSid(),
                 flowResource.getSid(),
                 flowResource.getFriendlyName(),
@@ -71,7 +64,6 @@ public class StudioFlowService {
     }
 
     public Object getDefinitionBySid(String flowSid) {
-        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         Flow record = Flow.fetcher(flowSid).fetch();
         return record.getDefinition();
     }

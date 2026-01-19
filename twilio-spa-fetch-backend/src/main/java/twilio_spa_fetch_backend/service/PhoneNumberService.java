@@ -14,12 +14,6 @@ import java.util.List;
 @Service
 public class PhoneNumberService {
 
-    @Value("${twilio.account-sid}")
-    private String ACCOUNT_SID;
-
-    @Value("${twilio.auth-token}")
-    private String AUTH_TOKEN;
-
     public ResponseEntity<List<PhoneNumberDTO>> listAllPhoneNumbers() {
         ResourceSet<IncomingPhoneNumber> incomingPhoneNumbers = IncomingPhoneNumber.reader().limit(50).read();
         List<PhoneNumberDTO> dtoList = new ArrayList<>();
