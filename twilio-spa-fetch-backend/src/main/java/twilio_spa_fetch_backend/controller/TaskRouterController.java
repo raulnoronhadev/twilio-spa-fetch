@@ -33,7 +33,7 @@ public class TaskRouterController {
         return ResponseEntity.ok(taskRouterService.getAllWorkers(workspaceSid));
     }
 
-    @GetMapping("/{workspaceSid}/Workflow/{workflowSid}")
+    @GetMapping("/{workspaceSid}/Workflows/{workflowSid}")
     public ResponseEntity<WorkflowRecordDTO> getWorkflowBySid(@PathVariable String workspaceSid, @PathVariable String workflowSid) {
         return ResponseEntity.ok(taskRouterService.getWorkflowBySid(workspaceSid, workflowSid));
     }
@@ -43,7 +43,7 @@ public class TaskRouterController {
         return ResponseEntity.ok(taskRouterService.getAllWorkflows(workspaceSid));
     }
 
-    @GetMapping("/{workspaceSid}/TaskQueue/{taskQueue}")
+    @GetMapping("/{workspaceSid}/TaskQueues/{taskQueueSid}")
     public ResponseEntity<TaskQueueRecordDTO> getTaskQueueBySid(@PathVariable String workspaceSid, @PathVariable String taskQueueSid) {
         return ResponseEntity.ok(taskRouterService.getTaskQueueBySid(workspaceSid, taskQueueSid));
     }
@@ -53,7 +53,7 @@ public class TaskRouterController {
         return ResponseEntity.ok(taskRouterService.getAllQueues(workspaceSid));
     }
 
-    @GetMapping("/{workspaceSid}/TaskChannel/{taskChannelSid}")
+    @GetMapping("/{workspaceSid}/TaskChannels/{taskChannelSid}")
     public ResponseEntity<TaskChannelRecordDTO> getTaskChannelBySid(@PathVariable String workspaceSid, @PathVariable String taskChannelSid) {
         return ResponseEntity.ok(taskRouterService.getTaskChannelBySid(workspaceSid, taskChannelSid));
     }
