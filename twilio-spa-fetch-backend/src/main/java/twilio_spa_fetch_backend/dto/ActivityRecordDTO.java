@@ -1,5 +1,7 @@
 package twilio_spa_fetch_backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
@@ -10,7 +12,7 @@ public record ActivityRecordDTO(
         @JsonProperty("date_updated") Date dateUpdated,
         @JsonProperty("friendly_name") String friendlyName,
         String sid,
-        String url,
+        URI url,
         @JsonProperty("workspace_sid") String workspaceSid,
         Map<String, String> links
 ) {}

@@ -2,6 +2,7 @@ package twilio_spa_fetch_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public record TaskChannelRecordDTO(
         @JsonProperty("friendly_name") String friendlyName,
         String sid,
         @JsonProperty("unique_name") String uniqueName,
-        String url,
+        URI url,
         @JsonProperty("workspace_sid") String workspaceSid,
         @JsonProperty("channel_optimized_routing") Boolean channelOptimizedRouting,
         Map<String, String> links

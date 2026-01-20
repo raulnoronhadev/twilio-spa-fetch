@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import twilio_spa_fetch_backend.dto.WorkspaceRecordDTO;
+import twilio_spa_fetch_backend.dto.*;
 import twilio_spa_fetch_backend.service.TaskRouterService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/TaskRouter")
@@ -16,9 +18,59 @@ public class TaskRouterController {
     @Autowired
     TaskRouterService taskRouterService;
 
-    @GetMapping("/workspaces/{workspaceSid}")
-    public ResponseEntity<WorkspaceRecordDTO> getWorkspace(@PathVariable String workspaceSid) {
+    @GetMapping("/{workspaceSid}")
+    public ResponseEntity<WorkspaceRecordDTO> getWorkspaceBySid(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getWorkspaceBySid(workspaceSid));
+    }
+
+    @GetMapping("/{workspaceSid}/Workers/{workerSid}")
+    public ResponseEntity<WorkerRecordDTO> getWorkerBySid(@PathVariable String workspaceSid, @PathVariable String workerSid) {
+        return ResponseEntity.ok(taskRouterService.getWorkerBySid(workspaceSid, workerSid));
+    }
+
+    @GetMapping("/{workspaceSid}/Workers")
+    public ResponseEntity<List<WorkerRecordDTO>> getAllWorkers(@PathVariable String workspaceSid) {
+        return ResponseEntity.ok(taskRouterService.getAllWorkers(workspaceSid));
+    }
+
+    @GetMapping("/{workspaceSid}/Workflow/{workflowSid}")
+    public ResponseEntity<WorkflowRecordDTO> getWorkflowBySid(@PathVariable String workspaceSid, @PathVariable String workflowSid) {
+        return ResponseEntity.ok(taskRouterService.getWorkflowBySid(workspaceSid, workflowSid));
+    }
+
+    @GetMapping("/{workspaceSid}/Workflows")
+    public ResponseEntity<List<WorkflowRecordDTO>> getAllWorkflows(@PathVariable String workspaceSid) {
+        return ResponseEntity.ok(taskRouterService.getAllWorkflows(workspaceSid));
+    }
+
+    @GetMapping("/{workspaceSid}/TaskQueue/{taskQueue}")
+    public ResponseEntity<TaskQueueRecordDTO> getTaskQueueBySid(@PathVariable String workspaceSid, @PathVariable String taskQueueSid) {
+        return ResponseEntity.ok(taskRouterService.getTaskQueueBySid(workspaceSid, taskQueueSid));
+    }
+
+    @GetMapping("/{workspaceSid}/TaskQueues")
+    public ResponseEntity<List<TaskQueueRecordDTO>> getAllQueues(@PathVariable String workspaceSid) {
+        return ResponseEntity.ok(taskRouterService.getAllQueues(workspaceSid));
+    }
+
+    @GetMapping("/{workspaceSid}/TaskChannel/{taskChannelSid}")
+    public ResponseEntity<TaskChannelRecordDTO> getTaskChannelBySid(@PathVariable String workspaceSid, @PathVariable String taskChannelSid) {
+        return ResponseEntity.ok(taskRouterService.getTaskChannelBySid(workspaceSid, taskChannelSid));
+    }
+
+    @GetMapping("/{workspaceSid}/TaskChannels")
+    public ResponseEntity<List<TaskChannelRecordDTO>> getAllChannels(@PathVariable String workspaceSid) {
+        return ResponseEntity.ok(taskRouterService.getAllChannels(workspaceSid));
+    }
+
+    @GetMapping("/{workspaceSid}/Activities/{activitySid}")
+    public ResponseEntity<ActivityRecordDTO> getActivityBySid(@PathVariable String workspaceSid, @PathVariable String activitySid) {
+        return ResponseEntity.ok(taskRouterService.getActivityBySid(workspaceSid, activitySid));
+    }
+
+    @GetMapping("/{workspaceSid}/Activities")
+    public ResponseEntity<List<ActivityRecordDTO>> getAllActivities(@PathVariable String workspaceSid) {
+        return ResponseEntity.ok(taskRouterService.getAllActivities(workspaceSid));
     }
 
 }

@@ -1,5 +1,7 @@
 package twilio_spa_fetch_backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
@@ -17,6 +19,6 @@ public record TaskQueueRecordDTO(
         String sid,
         @JsonProperty("target_workers") String targetWorkers,
         @JsonProperty("task_order") String taskOrder,
-        String url,
+        URI url,
         @JsonProperty("workspace_sid") String workspaceSid
 ) {}
