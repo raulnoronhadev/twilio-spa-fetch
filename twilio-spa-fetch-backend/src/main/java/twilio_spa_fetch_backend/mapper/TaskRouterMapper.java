@@ -8,7 +8,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TaskRouterMapper {
-
     WorkspaceRecordDTO workspaceToWorkspaceRecordDTO(Workspace workspace);
     WorkerRecordDTO workerToWorkerRecordDTO(Worker worker);
     List<WorkerRecordDTO> workerToWorkerRecordDTOList(List<Worker> worker);
