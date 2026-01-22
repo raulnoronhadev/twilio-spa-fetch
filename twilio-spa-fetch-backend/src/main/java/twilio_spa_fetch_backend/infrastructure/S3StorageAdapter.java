@@ -4,14 +4,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 import twilio_spa_fetch_backend.ports.StoragePort;
 
+import java.io.IOException;
 import java.net.URI;
 
 @Component
@@ -60,9 +64,23 @@ public class S3StorageAdapter implements StoragePort {
                 .contentType(contentType)
                 .checksumAlgorithm(ChecksumAlgorithm.UNKNOWN_TO_SDK_VERSION)
                 .build();
-
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
-
         return String.format("%s/%s/%s", endpoint, bucketName, fileName);
+    }
+
+    @Override
+    public byte[] downloadFile(String fileName) {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
+            ResponseInputStream<GetObjectResponse> response = s3Client.getObject((getObjectRequest);
+            return response.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading file: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error downloading file: " + e.getMessage(), e);
+        }
     }
 }
