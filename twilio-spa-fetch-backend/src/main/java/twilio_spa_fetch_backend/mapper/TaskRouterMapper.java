@@ -8,15 +8,15 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TaskRouterMapper {
-    WorkspaceRecordDTO workspaceToWorkspaceRecordDTO(Workspace workspace);
-    WorkerRecordDTO workerToWorkerRecordDTO(Worker worker);
-    List<WorkerRecordDTO> workerToWorkerRecordDTOList(List<Worker> worker);
-    WorkflowRecordDTO workflowToWorkflowRecordDTO(Workflow workflow);
-    List<WorkflowRecordDTO> workflowToWorkflowRecordDTOList(List<Workflow> workflow);
-    TaskQueueRecordDTO taskQueueToTaskQueueRecordDTO(TaskQueue taskQueue);
-    List<TaskQueueRecordDTO> taskQueueToTaskQueueDTOList(List<TaskQueue> taskQueue);
-    TaskChannelRecordDTO taskChannelToTaskChannelRecordDTOList(TaskChannel taskChannel);
-    List<TaskChannelRecordDTO> taskChannelToTaskChannelRecordDTOList(List<TaskChannel> taskChannel);
-    ActivityRecordDTO activityToActivityRecordDTO(Activity activity);
-    List<ActivityRecordDTO> activityToActivityRecordDTOList(List<Activity> activity);
+    WorkspaceResponse workspaceToWorkspaceDTO(Workspace workspace);
+    WorkerResponse workerToWorkerDTO(Worker worker);
+    List<WorkerResponse> workerToWorkerDTOList(List<Worker> worker);
+    WorkflowResponse workflowToWorkflowDTO(Workflow workflow);
+    List<WorkflowResponse> workflowToWorkflowDTOList(List<Workflow> workflow);
+    TaskQueueResponse taskQueueToTaskQueueDTO(TaskQueue taskQueue);
+    List<TaskQueueResponse> taskQueueToTaskQueueDTOList(List<TaskQueue> taskQueue);
+    TaskChannelResponse taskChannelToTaskChannelDTOList(TaskChannel taskChannel);
+    List<TaskChannelResponse> taskChannelToTaskChannelDTOList(List<TaskChannel> taskChannel);
+    ActivityResponse activityToActivityDTO(Activity activity);
+    List<ActivityResponse> activityToActivityDTOList(List<Activity> activity);
 }

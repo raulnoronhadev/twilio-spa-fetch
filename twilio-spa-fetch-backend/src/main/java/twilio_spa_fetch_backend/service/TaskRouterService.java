@@ -25,63 +25,63 @@ public class TaskRouterService {
 //                )
 //    }
 
-    public WorkspaceRecordDTO getWorkspaceBySid(String workspaceSid) {
+    public WorkspaceResponse getWorkspaceBySid(String workspaceSid) {
         Workspace workspace = Workspace.fetcher(workspaceSid).fetch();
-        return taskRouterMapper.workspaceToWorkspaceRecordDTO(workspace);
+        return taskRouterMapper.workspaceToWorkspaceDTO(workspace);
     }
 
-    public WorkerRecordDTO getWorkerBySid(String workspaceSid, String workerSid) {
+    public WorkerResponse getWorkerBySid(String workspaceSid, String workerSid) {
         Worker worker = Worker.fetcher(workspaceSid, workerSid).fetch();
-        return taskRouterMapper.workerToWorkerRecordDTO(worker);
+        return taskRouterMapper.workerToWorkerDTO(worker);
     }
 
-    public List<WorkerRecordDTO> getAllWorkers(String workspaceSid) {
+    public List<WorkerResponse> getAllWorkers(String workspaceSid) {
         ResourceSet<Worker> worker = Worker.reader(workspaceSid).limit(DEFAULT_LIMIT).read();
         List<Worker> workerList = StreamSupport.stream(worker.spliterator(), false).toList();
-        return taskRouterMapper.workerToWorkerRecordDTOList(workerList);
+        return taskRouterMapper.workerToWorkerDTOList(workerList);
     }
 
-    public WorkflowRecordDTO getWorkflowBySid(String workspaceSid, String workflowSid) {
+    public WorkflowResponse getWorkflowBySid(String workspaceSid, String workflowSid) {
         Workflow workflow = Workflow.fetcher(workspaceSid, workflowSid).fetch();
-        return taskRouterMapper.workflowToWorkflowRecordDTO(workflow);
+        return taskRouterMapper.workflowToWorkflowDTO(workflow);
     }
 
-    public List<WorkflowRecordDTO> getAllWorkflows(String workspaceSid) {
+    public List<WorkflowResponse> getAllWorkflows(String workspaceSid) {
         ResourceSet<Workflow> workflow = Workflow.reader(workspaceSid).limit(DEFAULT_LIMIT).read();
         List<Workflow> workflowList = StreamSupport.stream(workflow.spliterator(), false).toList();
-        return taskRouterMapper.workflowToWorkflowRecordDTOList(workflowList);
+        return taskRouterMapper.workflowToWorkflowDTOList(workflowList);
     }
 
-    public TaskQueueRecordDTO getTaskQueueBySid(String workspaceSid, String taskQueueSid) {
+    public TaskQueueResponse getTaskQueueBySid(String workspaceSid, String taskQueueSid) {
         TaskQueue taskQueue = TaskQueue.fetcher(workspaceSid, taskQueueSid).fetch();
-        return taskRouterMapper.taskQueueToTaskQueueRecordDTO(taskQueue);
+        return taskRouterMapper.taskQueueToTaskQueueDTO(taskQueue);
     }
 
-    public List<TaskQueueRecordDTO> getAllQueues(String workspaceSid) {
+    public List<TaskQueueResponse> getAllQueues(String workspaceSid) {
         ResourceSet<TaskQueue> taskQueue = TaskQueue.reader(workspaceSid).limit(DEFAULT_LIMIT).read();
         List<TaskQueue> taskQueueList = StreamSupport.stream(taskQueue.spliterator(), false).toList();
         return taskRouterMapper.taskQueueToTaskQueueDTOList(taskQueueList);
     }
 
-    public TaskChannelRecordDTO getTaskChannelBySid(String workspaceSid, String taskChannelSid) {
+    public TaskChannelResponse getTaskChannelBySid(String workspaceSid, String taskChannelSid) {
         TaskChannel taskChannel = TaskChannel.fetcher(workspaceSid, taskChannelSid).fetch();
-        return taskRouterMapper.taskChannelToTaskChannelRecordDTOList(taskChannel);
+        return taskRouterMapper.taskChannelToTaskChannelDTOList(taskChannel);
     }
 
-    public List<TaskChannelRecordDTO> getAllChannels(String workspaceSid) {
+    public List<TaskChannelResponse> getAllChannels(String workspaceSid) {
         ResourceSet<TaskChannel> taskChannel = TaskChannel.reader(workspaceSid).limit(DEFAULT_LIMIT).read();
         List<TaskChannel> taskChannelList = StreamSupport.stream(taskChannel.spliterator(), false).toList();
-        return taskRouterMapper.taskChannelToTaskChannelRecordDTOList(taskChannelList);
+        return taskRouterMapper.taskChannelToTaskChannelDTOList(taskChannelList);
     }
 
-    public ActivityRecordDTO getActivityBySid(String workspaceSid, String activitySid) {
+    public ActivityResponse getActivityBySid(String workspaceSid, String activitySid) {
         Activity activity = Activity.fetcher(workspaceSid, activitySid).fetch();
-        return taskRouterMapper.activityToActivityRecordDTO(activity);
+        return taskRouterMapper.activityToActivityDTO(activity);
     }
 
-    public List<ActivityRecordDTO> getAllActivities(String workspaceSid) {
+    public List<ActivityResponse> getAllActivities(String workspaceSid) {
         ResourceSet<Activity> activity = Activity.reader(workspaceSid).limit(DEFAULT_LIMIT).read();
         List<Activity> activitiesList = StreamSupport.stream(activity.spliterator(), false).toList();
-        return taskRouterMapper.activityToActivityRecordDTOList(activitiesList);
+        return taskRouterMapper.activityToActivityDTOList(activitiesList);
     }
 }

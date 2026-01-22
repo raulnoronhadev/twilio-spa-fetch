@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import twilio_spa_fetch_backend.dto.FlowRecordDTO;
+import twilio_spa_fetch_backend.dto.FlowResponse;
 import twilio_spa_fetch_backend.service.StudioFlowService;
 import java.util.List;
 
@@ -18,12 +18,12 @@ public class StudioFlowController {
     StudioFlowService studioFlowService;
 
     @GetMapping("/Flows")
-    public ResponseEntity<List<FlowRecordDTO>> getAllFlows() {
+    public ResponseEntity<List<FlowResponse>> getAllFlows() {
         return ResponseEntity.ok(studioFlowService.getAllFlows());
     }
 
     @GetMapping("/Flows/{flowSid}")
-    public ResponseEntity<FlowRecordDTO> getFlowBySID(@PathVariable String flowSid) {
+    public ResponseEntity<FlowResponse> getFlowBySID(@PathVariable String flowSid) {
         return ResponseEntity.ok(studioFlowService.getFlowBySid(flowSid));
     }
 

@@ -2,10 +2,8 @@ package twilio_spa_fetch_backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.Map;
 
-public record WorkflowRecordDTO(
+public record WorkflowResponse(
         @JsonProperty("account_sid") String accountSid,
         String sid,
         @JsonProperty("friendly_name") String friendlyName,

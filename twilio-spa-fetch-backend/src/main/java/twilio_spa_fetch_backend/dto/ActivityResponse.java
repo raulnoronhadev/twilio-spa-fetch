@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
-public record ActivityRecordDTO(
+public record ActivityResponse(
         @JsonProperty("account_sid") String accountSid,
         Boolean available,
         @JsonProperty("date_created") Date dateCreated,

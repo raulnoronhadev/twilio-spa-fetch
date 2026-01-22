@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public record FlowRecordDTO(
+public record FlowResponse(
         @JsonProperty("account_sid") String accountSid,
         String sid,
         @JsonProperty("friendly_name") String friendlyName,

@@ -83,6 +83,18 @@
 			<artifactId>twilio</artifactId>
 			<version>10.5.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>1.12.797</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.41.10</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
