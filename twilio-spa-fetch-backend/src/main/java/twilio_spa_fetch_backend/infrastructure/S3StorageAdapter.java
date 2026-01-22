@@ -9,6 +9,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 import twilio_spa_fetch_backend.ports.StoragePort;
 
 import java.net.URI;
@@ -36,6 +37,7 @@ public class S3StorageAdapter implements StoragePort {
                 .endpointOverride(URI.create(endpoint))
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
+                        .checksumValidationEnabled(false)
                         .build())
                 .build();
     }
@@ -56,6 +58,7 @@ public class S3StorageAdapter implements StoragePort {
                 .bucket(bucketName)
                 .key(fileName)
                 .contentType(contentType)
+                .checksumAlgorithm(ChecksumAlgorithm.UNKNOWN_TO_SDK_VERSION)
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
