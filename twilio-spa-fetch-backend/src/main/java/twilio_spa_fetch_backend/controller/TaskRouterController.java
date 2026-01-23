@@ -23,6 +23,11 @@ public class TaskRouterController {
         return ResponseEntity.ok(taskRouterService.getWorkspaceBySid(workspaceSid));
     }
 
+    @GetMapping("/FullWorkspace/{workspaceSid}")
+    public ResponseEntity<WorkspaceDTO> getFullWorkspace(@PathVariable String workspaceSid) {
+        return ResponseEntity.ok(taskRouterService.getFullWorkspace(workspaceSid));
+    }
+
     @GetMapping("/{workspaceSid}/Workers/{workerSid}")
     public ResponseEntity<WorkerDTO> getWorkerBySid(@PathVariable String workspaceSid, @PathVariable String workerSid) {
         return ResponseEntity.ok(taskRouterService.getWorkerBySid(workspaceSid, workerSid));

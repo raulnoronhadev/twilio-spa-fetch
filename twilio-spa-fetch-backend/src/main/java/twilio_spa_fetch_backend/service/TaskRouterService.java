@@ -29,6 +29,18 @@ public class TaskRouterService {
         return taskRouterMapper.workspaceToWorkspaceDTO(workspace);
     }
 
+    public WorkspaceDTO getFullWorkspace(String workspaceSid) {
+        Workspace workspace = Workspace.fetcher(workspaceSid).fetch();
+        List<WorkflowDTO> workflows = getAllWorkflows(workspaceSid);
+        List<WorkerDTO> workers = getAllWorkers(workspaceSid);
+        List<TaskChannelDTO> channels = getAllChannels(workspaceSid);
+        List<TaskQueueDTO> queues = getAllQueues(workspaceSid);
+        List<ActivityDTO> activities = getAllActivities(workspaceSid);
+        return taskRouterMapper.workspaceToWorkspaceDTO(
+                workspace, workflows, workers, channels, queues, activities
+        );
+    }
+
     public WorkerDTO getWorkerBySid(String workspaceSid, String workerSid) {
         Worker worker = Worker.fetcher(workspaceSid, workerSid).fetch();
         return taskRouterMapper.workerToWorkerDTO(worker);

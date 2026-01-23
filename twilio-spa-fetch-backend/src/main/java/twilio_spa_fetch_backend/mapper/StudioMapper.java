@@ -5,7 +5,5 @@ import twilio_spa_fetch_backend.dto.FlowDTO;
 
 @Mapper(componentModel = "spring")
 public interface StudioMapper {
-
     FlowDTO flowToFlowDTO(Flow flow);
-
 }

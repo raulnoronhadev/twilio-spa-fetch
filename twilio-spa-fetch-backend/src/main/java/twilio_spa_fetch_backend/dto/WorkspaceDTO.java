@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.twilio.rest.taskrouter.v1.Workspace;
 import java.net.URI;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 
 public record WorkspaceDTO(
@@ -20,5 +21,10 @@ public record WorkspaceDTO(
         @JsonProperty("timeout_activity_name") String timeoutActivityName,
         @JsonProperty("timeout_activity_sid") String timeoutActivitySid,
         @JsonProperty("prioritize_queue_order") Workspace.QueueOrder prioritizeQueueOrder,
-        URI url
+        URI url,
+        List<WorkflowDTO> workflows,
+        List<WorkerDTO> workers,
+        List<TaskChannelDTO> taskChannels,
+        List<TaskQueueDTO> taskQueues,
+        List<ActivityDTO> activities
 ) {}
