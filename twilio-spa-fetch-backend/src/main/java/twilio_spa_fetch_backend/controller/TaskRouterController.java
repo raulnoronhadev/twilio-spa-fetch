@@ -19,57 +19,57 @@ public class TaskRouterController {
     TaskRouterService taskRouterService;
 
     @GetMapping("/{workspaceSid}")
-    public ResponseEntity<WorkspaceResponse> getWorkspaceBySid(@PathVariable String workspaceSid) {
+    public ResponseEntity<WorkspaceDTO> getWorkspaceBySid(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getWorkspaceBySid(workspaceSid));
     }
 
     @GetMapping("/{workspaceSid}/Workers/{workerSid}")
-    public ResponseEntity<WorkerResponse> getWorkerBySid(@PathVariable String workspaceSid, @PathVariable String workerSid) {
+    public ResponseEntity<WorkerDTO> getWorkerBySid(@PathVariable String workspaceSid, @PathVariable String workerSid) {
         return ResponseEntity.ok(taskRouterService.getWorkerBySid(workspaceSid, workerSid));
     }
 
     @GetMapping("/{workspaceSid}/Workers")
-    public ResponseEntity<List<WorkerResponse>> getAllWorkers(@PathVariable String workspaceSid) {
+    public ResponseEntity<List<WorkerDTO>> getAllWorkers(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getAllWorkers(workspaceSid));
     }
 
     @GetMapping("/{workspaceSid}/Workflows/{workflowSid}")
-    public ResponseEntity<WorkflowResponse> getWorkflowBySid(@PathVariable String workspaceSid, @PathVariable String workflowSid) {
+    public ResponseEntity<WorkflowDTO> getWorkflowBySid(@PathVariable String workspaceSid, @PathVariable String workflowSid) {
         return ResponseEntity.ok(taskRouterService.getWorkflowBySid(workspaceSid, workflowSid));
     }
 
     @GetMapping("/{workspaceSid}/Workflows")
-    public ResponseEntity<List<WorkflowResponse>> getAllWorkflows(@PathVariable String workspaceSid) {
+    public ResponseEntity<List<WorkflowDTO>> getAllWorkflows(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getAllWorkflows(workspaceSid));
     }
 
     @GetMapping("/{workspaceSid}/TaskQueues/{taskQueueSid}")
-    public ResponseEntity<TaskQueueResponse> getTaskQueueBySid(@PathVariable String workspaceSid, @PathVariable String taskQueueSid) {
+    public ResponseEntity<TaskQueueDTO> getTaskQueueBySid(@PathVariable String workspaceSid, @PathVariable String taskQueueSid) {
         return ResponseEntity.ok(taskRouterService.getTaskQueueBySid(workspaceSid, taskQueueSid));
     }
 
     @GetMapping("/{workspaceSid}/TaskQueues")
-    public ResponseEntity<List<TaskQueueResponse>> getAllQueues(@PathVariable String workspaceSid) {
+    public ResponseEntity<List<TaskQueueDTO>> getAllQueues(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getAllQueues(workspaceSid));
     }
 
     @GetMapping("/{workspaceSid}/TaskChannels/{taskChannelSid}")
-    public ResponseEntity<TaskChannelResponse> getTaskChannelBySid(@PathVariable String workspaceSid, @PathVariable String taskChannelSid) {
+    public ResponseEntity<TaskChannelDTO> getTaskChannelBySid(@PathVariable String workspaceSid, @PathVariable String taskChannelSid) {
         return ResponseEntity.ok(taskRouterService.getTaskChannelBySid(workspaceSid, taskChannelSid));
     }
 
     @GetMapping("/{workspaceSid}/TaskChannels")
-    public ResponseEntity<List<TaskChannelResponse>> getAllChannels(@PathVariable String workspaceSid) {
+    public ResponseEntity<List<TaskChannelDTO>> getAllChannels(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getAllChannels(workspaceSid));
     }
 
     @GetMapping("/{workspaceSid}/Activities/{activitySid}")
-    public ResponseEntity<ActivityResponse> getActivityBySid(@PathVariable String workspaceSid, @PathVariable String activitySid) {
+    public ResponseEntity<ActivityDTO> getActivityBySid(@PathVariable String workspaceSid, @PathVariable String activitySid) {
         return ResponseEntity.ok(taskRouterService.getActivityBySid(workspaceSid, activitySid));
     }
 
     @GetMapping("/{workspaceSid}/Activities")
-    public ResponseEntity<List<ActivityResponse>> getAllActivities(@PathVariable String workspaceSid) {
+    public ResponseEntity<List<ActivityDTO>> getAllActivities(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getAllActivities(workspaceSid));
     }
 

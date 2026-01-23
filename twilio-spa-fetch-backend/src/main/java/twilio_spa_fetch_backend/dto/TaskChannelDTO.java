@@ -6,7 +6,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
-public record TaskChannelResponse(
+public record TaskChannelDTO(
         @JsonProperty("account_sid") String accountSid,
         @JsonProperty("date_created") Date dateCreated,
         @JsonProperty("date_updated") Date dateUpdated,

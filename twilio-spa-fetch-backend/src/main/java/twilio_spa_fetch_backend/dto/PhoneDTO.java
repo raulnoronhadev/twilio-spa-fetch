@@ -4,7 +4,7 @@ import com. twilio.type.PhoneNumber;
 import java.time.ZonedDateTime;
 import java. net. URI;
 
-public record PhoneResponse(
+public record PhoneDTO(
         @JsonProperty("account_sid") String accountSid,
         @JsonProperty("friendly_name") String friendlyName,
         @JsonProperty("phone_number") PhoneNumber phoneNumber,

@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import twilio_spa_fetch_backend.dto.PhoneResponse;
+import twilio_spa_fetch_backend.dto.PhoneDTO;
 import twilio_spa_fetch_backend.service.PhoneNumberService;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class PhoneNumberController {
     PhoneNumberService phoneNumberService;
 
     @GetMapping("/List")
-    public ResponseEntity<List<PhoneResponse>> getAllPhoneNumbers() {
+    public ResponseEntity<List<PhoneDTO>> getAllPhoneNumbers() {
         return ResponseEntity.ok(phoneNumberService.getAllPhoneNumbers());
     }
 }

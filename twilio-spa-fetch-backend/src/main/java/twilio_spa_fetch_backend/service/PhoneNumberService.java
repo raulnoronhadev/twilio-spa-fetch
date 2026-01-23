@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.twilio.base.ResourceSet;
 import com.twilio.rest.api.v2010.account.IncomingPhoneNumber;
 
-import twilio_spa_fetch_backend.dto.PhoneResponse;
+import twilio_spa_fetch_backend.dto.PhoneDTO;
 import twilio_spa_fetch_backend.mapper.PhoneNumberMapper;
 
 @Service
@@ -18,7 +18,7 @@ public class PhoneNumberService {
     @Autowired
     PhoneNumberMapper phoneNumberMapper;
 
-    public List<PhoneResponse> getAllPhoneNumbers() {
+    public List<PhoneDTO> getAllPhoneNumbers() {
         ResourceSet<IncomingPhoneNumber> phoneNumber = IncomingPhoneNumber.reader().read();
         List<IncomingPhoneNumber> phoneNumberList = StreamSupport.stream(phoneNumber.spliterator(), false).toList();
         return phoneNumberMapper.phoneNumberToPhoneNumberDTOList(phoneNumberList);

@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.twilio.rest.studio.v2.Flow;
 import com.twilio.base.ResourceSet;
-import twilio_spa_fetch_backend.dto.FlowResponse;
+import twilio_spa_fetch_backend.dto.FlowDTO;
 import twilio_spa_fetch_backend.mapper.StudioMapper;
 import twilio_spa_fetch_backend.ports.StoragePort;
 import java.time.LocalDateTime;
@@ -26,12 +26,12 @@ public class StudioFlowService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public FlowResponse getFlowBySid(String flowSid) {
+    public FlowDTO getFlowBySid(String flowSid) {
         Flow flow = Flow.fetcher(flowSid).fetch();
         return studioMapper.flowToFlowDTO(flow);
     }
 
-    public List<FlowResponse> getAllFlows() {
+    public List<FlowDTO> getAllFlows() {
         ResourceSet<Flow> flows = Flow.reader().read();
         return StreamSupport.stream(flows.spliterator(), false).map(flowSummary -> {
             Flow fullFlow = Flow.fetcher(flowSummary.getSid()).fetch();
@@ -46,8 +46,8 @@ public class StudioFlowService {
 
     public String backupFlowBySid(String flowSid) {
         try {
-            FlowResponse flowResponse = getFlowBySid(flowSid);
-            String jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(flowResponse);
+            FlowDTO flowDTO = getFlowBySid(flowSid);
+            String jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(flowDTO);
             byte[] jsonBytes = jsonContent.getBytes("UTF-8");
             String timestamp = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
@@ -59,7 +59,7 @@ public class StudioFlowService {
     }
 
     public List<String> backupAllFlows() {
-        List<FlowResponse> allFlows = getAllFlows();
+        List<FlowDTO> allFlows = getAllFlows();
 
         return allFlows.stream().map(flow -> {
             try {
@@ -78,13 +78,12 @@ public class StudioFlowService {
         try {
             byte[] jsonBytes = storagePort.downloadFile(fileName);
             String jsonContent = new String(jsonBytes, "UTF-8");
-            FlowResponse flowResponse = objectMapper.readValue(jsonContent, FlowResponse.class);
-            String friendlyName = flowResponse.friendlyName();
-            Flow.Status status = flowResponse.status();
-            Map<String, Object> definition = flowResponse.definition();
+            FlowDTO flowDTO = objectMapper.readValue(jsonContent, FlowDTO.class);
+            String friendlyName = flowDTO.friendlyName();
+            Flow.Status status = flowDTO.status();
+            Map<String, Object> definition = flowDTO.definition();
             FlowCreator flowCreator = Flow.creator(friendlyName, status, definition);
             Flow newFlow = flowCreator.create();
-            System.out.print("Flow restored successfully: " + newFlow.getSid());
             return newFlow.getSid();
         } catch (Exception e) {
             throw new RuntimeException("Error restoring flow: " + e.getMessage(), e);

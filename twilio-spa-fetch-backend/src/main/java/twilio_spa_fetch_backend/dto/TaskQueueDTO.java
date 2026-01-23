@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
-public record TaskQueueResponse(
+public record TaskQueueDTO(
         @JsonProperty("account_sid") String accountSid,
         @JsonProperty("assignment_activity_name") String assignmentActivityName,
         @JsonProperty("assignment_activity_sid") String assignmentActivitySid,

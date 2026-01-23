@@ -3,7 +3,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.ZonedDateTime;
 
-public record WorkflowResponse(
+public record WorkflowDTO(
         @JsonProperty("account_sid") String accountSid,
         String sid,
         @JsonProperty("friendly_name") String friendlyName,

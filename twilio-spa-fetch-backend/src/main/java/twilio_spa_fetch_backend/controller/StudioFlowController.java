@@ -1,10 +1,9 @@
 package twilio_spa_fetch_backend.controller;
 
-import com.twilio.http.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import twilio_spa_fetch_backend.dto.FlowResponse;
+import twilio_spa_fetch_backend.dto.FlowDTO;
 import twilio_spa_fetch_backend.service.StudioFlowService;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +16,12 @@ public class StudioFlowController {
     StudioFlowService studioFlowService;
 
     @GetMapping("/Flows")
-    public ResponseEntity<List<FlowResponse>> getAllFlows() {
+    public ResponseEntity<List<FlowDTO>> getAllFlows() {
         return ResponseEntity.ok(studioFlowService.getAllFlows());
     }
 
     @GetMapping("/Flows/{flowSid}")
-    public ResponseEntity<FlowResponse> getFlowBySID(@PathVariable String flowSid) {
+    public ResponseEntity<FlowDTO> getFlowBySID(@PathVariable String flowSid) {
         return ResponseEntity.ok(studioFlowService.getFlowBySid(flowSid));
     }
 
@@ -52,9 +51,7 @@ public class StudioFlowController {
         }
         String newFlowSid = studioFlowService.restoreDeletedFlow(fileName);
         return ResponseEntity.ok(Map.of(
-                "message", "Flow restored sucessfully",
-                "newFlowSid", newFlowSid,
-                "restoredFrom", fileName
+                "message", "Flow restored sucessfully", "newFlowSid", newFlowSid,  "restoredFrom", fileName
         ));
     }
 }
