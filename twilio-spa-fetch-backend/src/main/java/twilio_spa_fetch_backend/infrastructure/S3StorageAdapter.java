@@ -75,7 +75,7 @@ public class S3StorageAdapter implements StoragePort {
                     .bucket(bucketName)
                     .key(fileName)
                     .build();
-            ResponseInputStream<GetObjectResponse> response = s3Client.getObject((getObjectRequest);
+            ResponseInputStream<GetObjectResponse> response = s3Client.getObject(getObjectRequest);
             return response.readAllBytes();
         } catch (IOException e) {
             throw new RuntimeException("Error reading file: " + e.getMessage(), e);

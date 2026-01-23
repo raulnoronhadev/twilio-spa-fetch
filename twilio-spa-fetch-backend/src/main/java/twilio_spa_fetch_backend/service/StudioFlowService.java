@@ -1,5 +1,6 @@
 package twilio_spa_fetch_backend.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twilio.rest.studio.v2.FlowCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.twilio.rest.studio.v2.Flow;
@@ -7,10 +8,10 @@ import com.twilio.base.ResourceSet;
 import twilio_spa_fetch_backend.dto.FlowResponse;
 import twilio_spa_fetch_backend.mapper.StudioMapper;
 import twilio_spa_fetch_backend.ports.StoragePort;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -71,6 +72,23 @@ public class StudioFlowService {
                 throw new RuntimeException("Backup error: " + e.getMessage(), e);
             }
         }).toList();
+    }
+
+    public String restoreDeletedFlow(String fileName) {
+        try {
+            byte[] jsonBytes = storagePort.downloadFile(fileName);
+            String jsonContent = new String(jsonBytes, "UTF-8");
+            FlowResponse flowResponse = objectMapper.readValue(jsonContent, FlowResponse.class);
+            String friendlyName = flowResponse.friendlyName();
+            Flow.Status status = flowResponse.status();
+            Map<String, Object> definition = flowResponse.definition();
+            FlowCreator flowCreator = Flow.creator(friendlyName, status, definition);
+            Flow newFlow = flowCreator.create();
+            System.out.print("Flow restored successfully: " + newFlow.getSid());
+            return newFlow.getSid();
+        } catch (Exception e) {
+            throw new RuntimeException("Error restoring flow: " + e.getMessage(), e);
+        }
     }
 
 }

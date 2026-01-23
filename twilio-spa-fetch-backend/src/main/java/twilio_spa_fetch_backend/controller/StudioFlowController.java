@@ -1,5 +1,6 @@
 package twilio_spa_fetch_backend.controller;
 
+import com.twilio.http.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,5 +41,20 @@ public class StudioFlowController {
     public ResponseEntity<Object> backupAllFlows() {
         List<String> fileUrls = studioFlowService.backupAllFlows();
         return ResponseEntity.ok(fileUrls);
+    }
+
+    @PostMapping("Flows/restore")
+    public ResponseEntity<Map<String, String>> restoreFlow(@RequestBody Map<String, String> request) {
+        String fileName = request.get("fileName");
+        if (fileName == null || fileName.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "fileName is required"));
+        }
+        String newFlowSid = studioFlowService.restoreDeletedFlow(fileName);
+        return ResponseEntity.ok(Map.of(
+                "message", "Flow restored sucessfully",
+                "newFlowSid", newFlowSid,
+                "restoredFrom", fileName
+        ));
     }
 }

@@ -1,6 +1,7 @@
 package twilio_spa_fetch_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.twilio.rest.studio.v2.Flow;
 
 import java.net.URI;
 import java.util.Date;
@@ -13,7 +14,7 @@ public record FlowResponse(
         @JsonProperty("friendly_name") String friendlyName,
         @JsonProperty("date_created") Date dateCreated,
         @JsonProperty("date_updated") Date dateUpdated,
-        String status,
+        Flow.Status status,
         Integer revision,
         String commit_message,
         URI url,
