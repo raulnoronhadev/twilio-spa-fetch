@@ -6,8 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import twilio_spa_fetch_backend.dto.*;
 import twilio_spa_fetch_backend.mapper.TaskRouterMapper;
-
-import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -118,52 +117,88 @@ public class TaskRouterService {
 
     public String restoreWorkspace(String fileName) {
         try {
-            byte[] jsonBytes = storagePort.downloadFile(fileName);
-            String jsonContent = new String(jsonBytes, "UTF-8");
-            WorkspaceDTO workspaceDTO = objectMapper.readValue(jsonContent, WorkspaceDTO.class);
-            URI eventCallbackUrl = workspaceDTO.eventCallbackUrl();
-            String friendlyName = workspaceDTO.friendlyName();
-            Workspace workspace = Workspace.creator(friendlyName).setEventCallbackUrl(eventCallbackUrl).setTemplate("NONE").create();
-            String newWorkspaceSid = workspace.getSid();
-            System.out.println("Created new Workspace: " + newWorkspaceSid);
+            WorkspaceDTO workspaceDTO = loadWorkspaceFromFile(fileName);
+            String newWorkspaceSid = createWorkspace(workspaceDTO);
             Map<String, String> sidMapping = new HashMap<>();
-            for (ActivityDTO act : workspaceDTO.activities()) {
-                try {
-                    Activity newActivity = Activity.creator(newWorkspaceSid, act.friendlyName()).create();
-                    sidMapping.put(act.sid(), newActivity.getSid());
-                } catch (Exception e) {
-                    System.out.println("Activity " + act.friendlyName() + " already exists, skipping...");
-                }
-            }
-            System.out.println("Restored activities");
-            for (TaskChannelDTO channel : workspaceDTO.taskChannels()) {
-                try {
-                    TaskChannel.creator(newWorkspaceSid, channel.friendlyName(), channel.uniqueName()).create();
-                } catch (Exception e) {
-                    System.out.println("Channel " + channel.uniqueName() + " already exists, skipping...");
-                }
-            }
-            System.out.println("Restored channels");
-            for (TaskQueueDTO queue : workspaceDTO.taskQueues()) {
-                TaskQueue newQueue = TaskQueue.creator(newWorkspaceSid, queue.friendlyName()).create();
-                sidMapping.put(queue.sid(), newQueue.getSid());
-            }
-            System.out.println("Restored queues and mapped SIDs");
-            for (WorkerDTO worker : workspaceDTO.workers()) {
-                Worker.creator(newWorkspaceSid, worker.friendlyName()).setAttributes(worker.attributes()).create();
-            }
-            System.out.println("Restored workers");
-            for (WorkflowDTO workflow : workspaceDTO.workflows()) {
-                String config = workflow.configuration();
-                for (Map.Entry<String, String> entry : sidMapping.entrySet()) {
-                    config = config.replace(entry.getKey(), entry.getValue());
-                }
-                Workflow.creator(newWorkspaceSid, workflow.friendlyName(), config).setAssignmentCallbackUrl(workflow.assignmentCallbackUrl()).create();
-            }
-            System.out.println("Restored workflows");
+            restoreActivities(newWorkspaceSid, workspaceDTO.activities(), sidMapping);
+            restoreTaskChannels(newWorkspaceSid, workspaceDTO.taskChannels());
+            restoreTaskQueues(newWorkspaceSid, workspaceDTO.taskQueues(), sidMapping);
+            restoreWorkers(newWorkspaceSid, workspaceDTO.workers());
+            restoreWorkflows(newWorkspaceSid, workspaceDTO.workflows(), sidMapping);
+            System.out.println("Workspace restoration completed: " + newWorkspaceSid);
             return newWorkspaceSid;
         } catch (Exception e) {
             throw new RuntimeException("Error restoring Workspace " + e.getMessage(), e);
         }
+    }
+
+    private WorkspaceDTO loadWorkspaceFromFile(String fileName) throws Exception {
+        byte[] jsonBytes = storagePort.downloadFile(fileName);
+        String jsonContent = new String(jsonBytes, StandardCharsets.UTF_8);
+        return objectMapper.readValue(jsonContent, WorkspaceDTO.class);
+    }
+
+    private String createWorkspace(WorkspaceDTO workspaceDTO) {
+        Workspace workspace = Workspace.creator(workspaceDTO.friendlyName()).setEventCallbackUrl(workspaceDTO.eventCallbackUrl()).setTemplate("NONE").create();
+        String sid = workspace.getSid();
+        System.out.println("Created WOrkspace" + sid);
+        return sid;
+    }
+
+    private void restoreActivities(String workspaceSid, List<ActivityDTO> activities, Map<String, String> sidMapping) {
+        for (ActivityDTO activity : activities) {
+            try {
+                Activity newActivity = Activity.creator(workspaceSid, activity.friendlyName()).create();
+                sidMapping.put(activity.sid(), newActivity.getSid());
+            } catch (Exception e) {
+                System.out.println("Activity " + activity.friendlyName() + " already exists, skipping...");
+            }
+        }
+        System.out.println("Restored " + activities.size() + "activities");
+    }
+
+    private void restoreTaskChannels(String workspaceSid, List<TaskChannelDTO> channels) {
+        for (TaskChannelDTO channel : channels) {
+            try {
+                TaskChannel.creator(workspaceSid, channel.friendlyName(), channel.uniqueName()).create();
+            } catch (Exception e) {
+                System.out.println("⏭️  Channel '" + channel.uniqueName() + "' already exists, skipping...");
+            }
+        }
+        System.out.println("Restored " + channels.size() + " task channels");
+    }
+
+    private void restoreTaskQueues(String workspaceSid, List<TaskQueueDTO> queues, Map<String, String> sidMapping) {
+        for (TaskQueueDTO queue : queues) {
+            TaskQueue newQueue = TaskQueue.creator(workspaceSid, queue.friendlyName()).create();
+            sidMapping.put(queue.sid(), newQueue.getSid());
+        }
+        System.out.println("Restored " + queues.size() + " task queues");
+    }
+
+    private void restoreWorkers(String workspaceSid, List<WorkerDTO> workers) {
+        for (WorkerDTO worker : workers) {
+            Worker.creator(workspaceSid, worker.friendlyName()).setAttributes(worker.attributes()).create();
+        }
+        System.out.println("Restored " + workers.size() + " workers");
+    }
+
+    private void restoreWorkflows(String workspaceSid, List<WorkflowDTO> workflows, Map<String, String> sidMapping) {
+        for (WorkflowDTO workflow : workflows) {
+            String updatedConfig = replaceSidsInConfiguration(workflow.configuration(), sidMapping);
+
+            Workflow.creator(workspaceSid, workflow.friendlyName(), updatedConfig)
+                    .setAssignmentCallbackUrl(workflow.assignmentCallbackUrl())
+                    .create();
+        }
+        System.out.println("Restored " + workflows.size() + " workflows");
+    }
+
+    private String replaceSidsInConfiguration(String configuration, Map<String, String> sidMapping) {
+        String result = configuration;
+        for (Map.Entry<String, String> entry : sidMapping.entrySet()) {
+            result = result.replace(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 }
