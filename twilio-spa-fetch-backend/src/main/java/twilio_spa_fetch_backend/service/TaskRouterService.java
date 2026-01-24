@@ -141,7 +141,7 @@ public class TaskRouterService {
     private String createWorkspace(WorkspaceDTO workspaceDTO) {
         Workspace workspace = Workspace.creator(workspaceDTO.friendlyName()).setEventCallbackUrl(workspaceDTO.eventCallbackUrl()).setTemplate("NONE").create();
         String sid = workspace.getSid();
-        System.out.println("Created WOrkspace" + sid);
+        System.out.println("Created Workspace" + sid);
         return sid;
     }
 
@@ -162,7 +162,7 @@ public class TaskRouterService {
             try {
                 TaskChannel.creator(workspaceSid, channel.friendlyName(), channel.uniqueName()).create();
             } catch (Exception e) {
-                System.out.println("⏭️  Channel '" + channel.uniqueName() + "' already exists, skipping...");
+                System.out.println("Channel '" + channel.uniqueName() + "' already exists, skipping...");
             }
         }
         System.out.println("Restored " + channels.size() + " task channels");
