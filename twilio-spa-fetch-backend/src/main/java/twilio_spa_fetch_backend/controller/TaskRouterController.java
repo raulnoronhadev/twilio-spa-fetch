@@ -2,14 +2,12 @@ package twilio_spa_fetch_backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import twilio_spa_fetch_backend.dto.*;
 import twilio_spa_fetch_backend.service.TaskRouterService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/TaskRouter")
@@ -23,8 +21,8 @@ public class TaskRouterController {
         return ResponseEntity.ok(taskRouterService.getWorkspaceBySid(workspaceSid));
     }
 
-    @GetMapping("/FullWorkspace/{workspaceSid}")
-    public ResponseEntity<WorkspaceDTO> getFullWorkspace(@PathVariable String workspaceSid) {
+    @GetMapping("/CompleteWorkspace/{workspaceSid}")
+    public ResponseEntity<WorkspaceDTO> getCompleteWorkspaceConfiguration(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getFullWorkspace(workspaceSid));
     }
 
@@ -76,6 +74,25 @@ public class TaskRouterController {
     @GetMapping("/{workspaceSid}/Activities")
     public ResponseEntity<List<ActivityDTO>> getAllActivities(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getAllActivities(workspaceSid));
+    }
+
+    @PostMapping("/Workspace/backup/{workspaceSid}")
+    public ResponseEntity<Object> backupAllFlows(@PathVariable String workspaceSid) {
+        String fileUrls = taskRouterService.backupWorkspace(workspaceSid);
+        return ResponseEntity.ok(fileUrls);
+    }
+
+    @PostMapping("/Workspace/restore")
+    public ResponseEntity<Map<String, String>> restoreWorkspace(@RequestBody Map<String, String> request) {
+        String fileName = request.get("fileName");
+        if (fileName == null || fileName.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "fileName is required"));
+        }
+        String newWorkspaceSid = taskRouterService.restoreWorkspace(fileName);
+        return ResponseEntity.ok(Map.of(
+                "message", "Flow restored sucessfully", "newFlowSid", newWorkspaceSid,  "restoredFrom", fileName
+        ));
     }
 
 }

@@ -58,12 +58,7 @@ public class S3StorageAdapter implements StoragePort {
 
     @Override
     public String uploadFile(byte[] fileData, String fileName, String contentType) {
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .contentType(contentType)
-                .checksumAlgorithm(ChecksumAlgorithm.UNKNOWN_TO_SDK_VERSION)
-                .build();
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(fileName).contentType(contentType).checksumAlgorithm(ChecksumAlgorithm.UNKNOWN_TO_SDK_VERSION).build();
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
         return String.format("%s/%s/%s", endpoint, bucketName, fileName);
     }
@@ -71,10 +66,7 @@ public class S3StorageAdapter implements StoragePort {
     @Override
     public byte[] downloadFile(String fileName) {
         try {
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileName)
-                    .build();
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(fileName).build();
             ResponseInputStream<GetObjectResponse> response = s3Client.getObject(getObjectRequest);
             return response.readAllBytes();
         } catch (IOException e) {

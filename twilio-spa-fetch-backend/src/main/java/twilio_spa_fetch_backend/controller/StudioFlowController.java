@@ -42,7 +42,7 @@ public class StudioFlowController {
         return ResponseEntity.ok(fileUrls);
     }
 
-    @PostMapping("Flows/restore")
+    @PostMapping("/Flows/restore")
     public ResponseEntity<Map<String, String>> restoreFlow(@RequestBody Map<String, String> request) {
         String fileName = request.get("fileName");
         if (fileName == null || fileName.isEmpty()) {
