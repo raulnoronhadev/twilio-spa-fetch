@@ -26,6 +26,14 @@ services:
     depends_on:
       - alarik
 
+  front:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    restart: always
+    ports:
+      - "5173:5173"
+
 volumes:
   alarik-storage:
 
