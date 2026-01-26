@@ -17,6 +17,7 @@ public record FlowDTO(
         Flow.Status status,
         Integer revision,
         String commit_message,
+        @JsonProperty("webhook_url") URI webhookUrl,
         URI url,
         Boolean valid,
         List<Map<String, Object>> errors,
