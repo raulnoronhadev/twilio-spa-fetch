@@ -1,15 +1,28 @@
 import { Box, Container, Typography, TextField, Button } from '@mui/material';
 import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../../hooks/reduxHooks';
+import { loginSuccess } from '../../store/authSlice';
 
 export default function Login() {
 
     const [accountSid, setAccountSid] = useState('');
     const [authToken, setAuthToken] = useState('');
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log('Account SID: ', accountSid, 'Password: ', authToken);
-    }
+        const response = await fetch('http://localhost:8080/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accountSid, authToken }),
+        });
+        if (response.ok) {
+            dispatch(loginSuccess({ accountSid }));
+            navigate('/internal');
+        }
+    };
 
     return (
         <Container sx={{ height: "100vh" }}>

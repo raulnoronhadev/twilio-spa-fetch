@@ -10,7 +10,7 @@ import twilio_spa_fetch_backend.service.AuthService;
 import java.util.Map;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/auth")
 @CrossOrigin(origins = "*")
 public class AuthController {
 
@@ -32,7 +32,7 @@ public class AuthController {
     @GetMapping("/validate")
     public ResponseEntity<?>  validateToken(@RequestHeader("Authorization") String authHeader) {
         try {
-            String token = authHeader.replace("Bearer", "");
+            String token = authHeader.replace("Bearer ", "");
             boolean isValid = authService.validateToken(token);
             if (isValid) {
                 String accountSid = authService.getAccountSidFromToken(token);

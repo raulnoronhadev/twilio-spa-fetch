@@ -16,10 +16,10 @@ import java.util.Date;
 @Service
 public class AuthService {
 
-    @Value("${jwt.secret:secret-key")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("jwt.expiration:86400000")
+    @Value("${jwt.expiration}")
     private long jwtExpiration;
 
     public LoginResponseDTO login(LoginRequestDTO request) {
