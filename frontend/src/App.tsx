@@ -1,6 +1,6 @@
 import { CssBaseline } from '@mui/material';
-import { Routes, Route } from "react-router-dom";
-import Login from './pages/Login/Login';
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './routes/AppRoutes';
 
 export default function App() {
 
@@ -9,9 +9,7 @@ export default function App() {
       <CssBaseline />
       <div className="app">
         <main className="content">
-          <Routes>
-            <Route path="/" element={<Login />} />
-          </Routes>
+          <AppRoutes />
         </main>
       </div>
     </>

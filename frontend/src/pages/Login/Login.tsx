@@ -20,7 +20,7 @@ export default function Login() {
         });
         if (response.ok) {
             dispatch(loginSuccess({ accountSid }));
-            navigate('/internal');
+            navigate('/');
         }
     };
 
