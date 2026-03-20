@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 export default function Login() {
 
     return (
-        <Container>
+        <Container sx={{ height: "100vh" }}>
             <Typography>Private route</Typography>
         </Container >
     )
