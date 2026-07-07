@@ -1,12 +1,15 @@
 import { apiRequest } from './api';
 
-interface LoginCredentials {
+export interface LoginCredentials {
     accountSid: string;
     authToken: string;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
     token: string;
+    accountSid: string;
+    accountName: string;
+    expireIn: number;
 }
 
 export async function loginRequest(credentials: LoginCredentials): Promise<LoginResponse> {
@@ -14,4 +17,8 @@ export async function loginRequest(credentials: LoginCredentials): Promise<Login
         method: 'POST',
         body: JSON.stringify(credentials),
     });
+}
+
+export async function logoutRequest(): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>('/auth/logout', { method: 'POST' });
 }

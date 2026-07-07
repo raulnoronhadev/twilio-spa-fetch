@@ -1,12 +1,18 @@
 import { Box, Container, Typography, TextField, Button } from '@mui/material';
 import { useState, type FormEvent } from 'react';
-import { useLogin } from '../../hooks/useAuth';
+import { Navigate } from 'react-router-dom';
+import { useAuth, useLogin } from '../../hooks/useAuth';
 
 export default function Login() {
 
     const [accountSid, setAccountSid] = useState('');
     const [authToken, setAuthToken] = useState('');
-    const { mutate: login, isPending, isError } = useLogin()
+    const { userIsLogged } = useAuth();
+    const { mutate: login, isPending, isError, error } = useLogin()
+
+    if (userIsLogged) {
+        return <Navigate to="/" replace />;
+    }
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -44,7 +50,7 @@ export default function Login() {
                             width: "32em",
                         }}
                         />
-                        {isError && <Typography color="error">Invalid credentials.</Typography>}
+                        {isError && <Typography color="error">{error instanceof Error ? error.message : 'Invalid credentials.'}</Typography>}
                         <Button type="submit" variant="contained" color="primary" size="large" disabled={isPending} sx={{ p: 2 }} >
                             {isPending ? 'Entering...' : 'Continue'}
                         </Button>
