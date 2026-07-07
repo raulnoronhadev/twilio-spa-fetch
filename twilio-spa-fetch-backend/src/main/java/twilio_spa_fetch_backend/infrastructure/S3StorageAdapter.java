@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
+import software.amazon.awssdk.core.checksums.ResponseChecksumValidation;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -12,7 +14,6 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 import twilio_spa_fetch_backend.ports.StoragePort;
 
 import java.io.IOException;
@@ -39,9 +40,12 @@ public class S3StorageAdapter implements StoragePort {
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .endpointOverride(URI.create(endpoint))
+                // S3-compatible servers (Alarik) don't support the aws-chunked
+                // streaming checksums the SDK sends by default since v2.30.
+                .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+                .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
-                        .checksumValidationEnabled(false)
                         .build())
                 .build();
     }
@@ -58,7 +62,7 @@ public class S3StorageAdapter implements StoragePort {
 
     @Override
     public String uploadFile(byte[] fileData, String fileName, String contentType) {
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(fileName).contentType(contentType).checksumAlgorithm(ChecksumAlgorithm.UNKNOWN_TO_SDK_VERSION).build();
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(fileName).contentType(contentType).build();
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
         return String.format("%s/%s/%s", endpoint, bucketName, fileName);
     }
