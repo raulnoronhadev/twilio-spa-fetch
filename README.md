@@ -5,11 +5,11 @@ A full-stack application for exploring and backing up Twilio account resources. 
 ## Architecture
 
 ```
-┌──────────────┐        ┌───────────────────┐        ┌─────────────┐
+┌──────────────-┐        ┌───────────────────┐        ┌─────────────┐
 │   Frontend    │  REST  │      Backend      │  SDK   │ Twilio API  │
 │ React + Vite  │ ─────► │ Spring Boot (JWT) │ ─────► │             │
 │ localhost:5173│        │  localhost:8080   │        └─────────────┘
-└──────────────┘        └─────────┬─────────┘
+└──────────────-┘        └─────────┬─────────┘
                                    │ AWS SDK (S3)
                                    ▼
                         ┌───────────────────┐
