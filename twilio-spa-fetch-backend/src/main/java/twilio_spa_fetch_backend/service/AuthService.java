@@ -1,13 +1,16 @@
 package twilio_spa_fetch_backend.service;
-import com.twilio.Twilio;
+import com.twilio.http.TwilioRestClient;
 import com.twilio.rest.api.v2010.Account;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import twilio_spa_fetch_backend.dto.LoginRequestDTO;
 import twilio_spa_fetch_backend.dto.LoginResponseDTO;
+import twilio_spa_fetch_backend.exception.InvalidCredentialsException;
+import twilio_spa_fetch_backend.security.TokenCipher;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -16,53 +19,44 @@ import java.util.Date;
 @Service
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
     @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
+    private final TokenCipher tokenCipher;
+
+    public AuthService(TokenCipher tokenCipher) {
+        this.tokenCipher = tokenCipher;
+    }
+
     public LoginResponseDTO login(LoginRequestDTO request) {
         String accountSid = request.accountSid();
         String authToken = request.authToken();
 
-        if (!validateTwilioCredentials(accountSid, authToken)) {
-            throw new RuntimeException("Invalid credentials");
-        }
-
-        String accountName = getAccountName(accountSid, authToken);
+        // A dedicated client validates the credentials without touching any
+        // global SDK state, so concurrent logins never interfere.
+        Account account = fetchAccount(accountSid, authToken);
         String token = generateJwtToken(accountSid, authToken);
 
-        return new LoginResponseDTO (
+        return new LoginResponseDTO(
                 token,
                 accountSid,
-                accountName,
+                account.getFriendlyName(),
                 jwtExpiration / 1000
         );
     }
 
-    private boolean validateTwilioCredentials(String accountSid, String authToken) {
+    private Account fetchAccount(String accountSid, String authToken) {
         try {
-            Twilio.init(accountSid, authToken);
-            Account account = Account.fetcher(accountSid).fetch();
-            return account != null;
+            TwilioRestClient client = new TwilioRestClient.Builder(accountSid, authToken).build();
+            return Account.fetcher(accountSid).fetch(client);
         } catch (Exception e) {
-            System.out.println("Invalid credential: " + e.getMessage());
-            return false;
-        } finally {
-            Twilio.destroy();
-        }
-    }
-
-    private String getAccountName(String accountSid, String authToken) {
-        try {
-            Twilio.init(accountSid, authToken);
-            Account account = Account.fetcher(accountSid).fetch();
-            return account.getFriendlyName();
-        } catch (Exception e) {
-            return "Twilio Account";
-        } finally {
-            Twilio.destroy();
+            log.warn("Twilio credential validation failed for {}: {}", accountSid, e.getMessage());
+            throw new InvalidCredentialsException("Invalid Twilio credentials", e);
         }
     }
 
@@ -74,7 +68,9 @@ public class AuthService {
 
         return Jwts.builder()
                 .subject(accountSid)
-                .claim("authToken", authToken)
+                // The auth token is encrypted: JWT claims are readable by anyone
+                // holding the token, and this one is a Twilio master credential.
+                .claim("authToken", tokenCipher.encrypt(authToken))
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
@@ -95,12 +91,13 @@ public class AuthService {
     public String getAuthTokenFromToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 
-        return Jwts.parser()
+        String encrypted = Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("authToken", String.class);
+        return tokenCipher.decrypt(encrypted);
     }
 
     public boolean validateToken(String token) {

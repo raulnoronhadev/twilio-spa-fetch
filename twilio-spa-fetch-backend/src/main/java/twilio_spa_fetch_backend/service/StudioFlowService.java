@@ -1,6 +1,7 @@
 package twilio_spa_fetch_backend.service;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.twilio.rest.studio.v2.FlowCreator;
+import com.twilio.http.TwilioRestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.twilio.rest.studio.v2.Flow;
@@ -8,10 +9,12 @@ import com.twilio.base.ResourceSet;
 import twilio_spa_fetch_backend.dto.FlowDTO;
 import twilio_spa_fetch_backend.mapper.StudioMapper;
 import twilio_spa_fetch_backend.ports.StoragePort;
+import twilio_spa_fetch_backend.security.TwilioClientProvider;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -26,67 +29,67 @@ public class StudioFlowService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private TwilioClientProvider twilioClientProvider;
+
     public FlowDTO getFlowBySid(String flowSid) {
-        Flow flow = Flow.fetcher(flowSid).fetch();
+        Flow flow = Flow.fetcher(flowSid).fetch(twilioClientProvider.getClient());
         return studioMapper.flowToFlowDTO(flow);
     }
 
     public List<FlowDTO> getAllFlows() {
-        ResourceSet<Flow> flows = Flow.reader().read();
+        TwilioRestClient client = twilioClientProvider.getClient();
+        ResourceSet<Flow> flows = Flow.reader().read(client);
         return StreamSupport.stream(flows.spliterator(), false).map(flowSummary -> {
-            Flow fullFlow = Flow.fetcher(flowSummary.getSid()).fetch();
+            Flow fullFlow = Flow.fetcher(flowSummary.getSid()).fetch(client);
             return studioMapper.flowToFlowDTO(fullFlow);
         }).toList();
     }
 
     public Object getDefinitionBySid(String flowSid) {
-        Flow flow = Flow.fetcher(flowSid).fetch();
+        Flow flow = Flow.fetcher(flowSid).fetch(twilioClientProvider.getClient());
         return flow.getDefinition();
     }
 
     public String backupFlowBySid(String flowSid) {
-        try {
-            FlowDTO flowDTO = getFlowBySid(flowSid);
-            String jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(flowDTO);
-            byte[] jsonBytes = jsonContent.getBytes("UTF-8");
-            String timestamp = LocalDateTime.now()
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-            String fileName = String.format("flows/%s_%s.json", flowSid, timestamp);
-            return storagePort.uploadFile(jsonBytes, fileName, "application/json");
-        } catch (Exception e) {
-            throw new RuntimeException("Flow backup error: " + e.getMessage(), e);
-        }
+        FlowDTO flowDTO = getFlowBySid(flowSid);
+        return uploadFlowBackup(flowDTO);
     }
 
     public List<String> backupAllFlows() {
-        List<FlowDTO> allFlows = getAllFlows();
-
-        return allFlows.stream().map(flow -> {
-            try {
-                String jsonContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(flow);
-                byte[] jsonBytes = jsonContent.getBytes("UTF-8");
-                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-                String fileName = String.format("flows/%s_%s.json", flow.sid(), timestamp);
-                return storagePort.uploadFile(jsonBytes, fileName, "application/json");
-            } catch (Exception e) {
-                throw new RuntimeException("Backup error: " + e.getMessage(), e);
-            }
-        }).toList();
+        return getAllFlows().stream().map(this::uploadFlowBackup).toList();
     }
 
     public String restoreDeletedFlow(String fileName) {
+        byte[] jsonBytes = storagePort.downloadFile(fileName);
+        FlowDTO flowDTO = parseFlowBackup(jsonBytes, fileName);
+        Flow newFlow = Flow.creator(flowDTO.friendlyName(), flowDTO.status(), flowDTO.definition())
+                .create(twilioClientProvider.getClient());
+        return newFlow.getSid();
+    }
+
+    private String uploadFlowBackup(FlowDTO flow) {
+        byte[] jsonBytes = serializeFlow(flow);
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+        String fileName = String.format("flows/%s_%s.json", flow.sid(), timestamp);
+        return storagePort.uploadFile(jsonBytes, fileName, "application/json");
+    }
+
+    private byte[] serializeFlow(FlowDTO flow) {
         try {
-            byte[] jsonBytes = storagePort.downloadFile(fileName);
-            String jsonContent = new String(jsonBytes, "UTF-8");
-            FlowDTO flowDTO = objectMapper.readValue(jsonContent, FlowDTO.class);
-            String friendlyName = flowDTO.friendlyName();
-            Flow.Status status = flowDTO.status();
-            Map<String, Object> definition = flowDTO.definition();
-            FlowCreator flowCreator = Flow.creator(friendlyName, status, definition);
-            Flow newFlow = flowCreator.create();
-            return newFlow.getSid();
-        } catch (Exception e) {
-            throw new RuntimeException("Error restoring flow: " + e.getMessage(), e);
+            return objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(flow)
+                    .getBytes(StandardCharsets.UTF_8);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize flow " + flow.sid(), e);
+        }
+    }
+
+    private FlowDTO parseFlowBackup(byte[] jsonBytes, String fileName) {
+        try {
+            return objectMapper.readValue(jsonBytes, FlowDTO.class);
+        } catch (IOException e) {
+            throw new IllegalStateException("Backup file is not a valid flow backup: " + fileName, e);
         }
     }
 }

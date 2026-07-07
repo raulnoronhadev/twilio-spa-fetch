@@ -1,0 +1,15 @@
+# Copy this file to application-local.properties and fill in your secrets.
+# application-local.properties is gitignored — never commit real credentials.
+
+# Alarik (S3-compatible) access key created in the console at http://localhost:3000
+S3_ACCESS_KEY=
+S3_SECRET_KEY=
+
+# Random signing key for the app's JWTs. Generate one with: openssl rand -hex 32
+JWT_SECRET=
+
+# Optional overrides (defaults shown)
+#S3_ENDPOINT=http://localhost:8081
+#S3_REGION=us-east-1
+#S3_BUCKET_NAME=twilio-bucket
+#JWT_EXPIRATION=86400000

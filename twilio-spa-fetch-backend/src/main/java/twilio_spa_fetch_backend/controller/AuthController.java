@@ -18,15 +18,9 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request) {
-        try {
-            LoginResponseDTO response = authService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", "Invalid credentials", "message", e.getMessage()
-            ));
-        }
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+        // Invalid credentials raise InvalidCredentialsException -> 401 via GlobalExceptionHandler.
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @GetMapping("/validate")

@@ -79,18 +79,20 @@ On first run, open the console, log in and **create an S3 access key**, then put
 
 ### 2. Configure and run the backend
 
-Edit `twilio-spa-fetch-backend/src/main/resources/application.properties`:
+Secrets are not committed — they are read from environment variables or from a gitignored `application-local.properties` file. Copy the template and fill it in:
+
+```bash
+cd twilio-spa-fetch-backend
+cp application-local.properties.example application-local.properties
+```
 
 ```properties
-aws.s3.endpoint=http://localhost:8081
-aws.s3.access-key=<your Alarik access key>
-aws.s3.secret-key=<your Alarik secret key>
-aws.s3.region=us-east-1
-aws.s3.bucket-name=twilio-bucket
-
-jwt.secret=<random hex string>
-jwt.expiration=86400000
+S3_ACCESS_KEY=<your Alarik access key>
+S3_SECRET_KEY=<your Alarik secret key>
+JWT_SECRET=<random hex string>       # generate with: openssl rand -hex 32
 ```
+
+Non-secret settings (S3 endpoint, region, bucket name, JWT expiration) have sensible defaults in `src/main/resources/application.properties` and can be overridden by the same mechanism.
 
 Then:
 
@@ -149,5 +151,5 @@ All endpoints except `/auth/**` require an `Authorization: Bearer <jwt>` header.
 ## Notes
 
 - CORS is configured for `http://localhost:5173` (Vite) and `http://localhost:3000`.
-- The JWT embeds the Twilio credentials so the backend can initialize the Twilio SDK per request — keep `jwt.secret` private and use HTTPS in any non-local deployment.
-- Do not commit real credentials in `application.properties` or `compose.yaml`; prefer environment variables for production.
+- The JWT carries the Twilio Auth Token (AES-256-GCM encrypted claim) so the backend can build a per-user Twilio client on each request — keep `JWT_SECRET` private and use HTTPS in any non-local deployment.
+- Secrets live in the gitignored `application-local.properties` (or environment variables) — never commit real credentials.

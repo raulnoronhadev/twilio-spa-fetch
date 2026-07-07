@@ -1,5 +1,7 @@
 package twilio_spa_fetch_backend.infrastructure;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -14,6 +16,7 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import twilio_spa_fetch_backend.exception.StorageException;
 import twilio_spa_fetch_backend.ports.StoragePort;
 
 import java.io.IOException;
@@ -21,6 +24,8 @@ import java.net.URI;
 
 @Component
 public class S3StorageAdapter implements StoragePort {
+
+    private static final Logger log = LoggerFactory.getLogger(S3StorageAdapter.class);
 
     private final S3Client s3Client;
     private final String bucketName;
@@ -54,9 +59,9 @@ public class S3StorageAdapter implements StoragePort {
     public void init() {
         try {
             s3Client.createBucket(builder -> builder.bucket(bucketName));
-            System.out.println("Created bucket: " + bucketName);
+            log.info("Created bucket: {}", bucketName);
         } catch (Exception e) {
-            System.out.println("Bucket already exists or error while creating.: " + e.getMessage());
+            log.warn("Bucket already exists or error while creating: {}", e.getMessage());
         }
     }
 
@@ -69,14 +74,11 @@ public class S3StorageAdapter implements StoragePort {
 
     @Override
     public byte[] downloadFile(String fileName) {
-        try {
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(fileName).build();
-            ResponseInputStream<GetObjectResponse> response = s3Client.getObject(getObjectRequest);
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(fileName).build();
+        try (ResponseInputStream<GetObjectResponse> response = s3Client.getObject(getObjectRequest)) {
             return response.readAllBytes();
         } catch (IOException e) {
-            throw new RuntimeException("Error reading file: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException("Error downloading file: " + e.getMessage(), e);
+            throw new StorageException("Error reading backup file: " + fileName, e);
         }
     }
 }
