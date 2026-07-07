@@ -10,4 +10,9 @@ public interface ConversationMapper {
 
     List<ConversationDTO> conversationToConversationDTOList(List<Conversation> conversation);
 
+    // Twilio enums expose their wire value ("active") via toString().
+    default String map(Conversation.State state) {
+        return state == null ? null : state.toString();
+    }
+
 }

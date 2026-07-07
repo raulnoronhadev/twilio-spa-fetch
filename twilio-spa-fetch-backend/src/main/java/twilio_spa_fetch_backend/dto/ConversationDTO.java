@@ -1,6 +1,5 @@
 package twilio_spa_fetch_backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.twilio.rest.conversations.v1.Conversation;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
@@ -14,7 +13,7 @@ public record ConversationDTO(
         @JsonProperty("friendly_name") String friendlyName,
         @JsonProperty("unique_name") String uniqueName,
         @JsonProperty("attributes") String attributes,
-        Conversation.State state,
+        String state,
         @JsonProperty("date_created") ZonedDateTime dateCreated,
         @JsonProperty("zone_date_time") ZonedDateTime dateUpdated,
         Map<String, Object>timers,

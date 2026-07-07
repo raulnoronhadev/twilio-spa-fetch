@@ -10,8 +10,7 @@ import twilio_spa_fetch_backend.service.AuthService;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     @Autowired

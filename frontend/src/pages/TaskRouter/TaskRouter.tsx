@@ -1,18 +1,20 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import {
-    Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent,
-    DialogTitle, Stack, Tab, Tabs, TextField, Typography,
+    Alert, Box, Button, Chip, Stack, Tab, Tabs, TextField, Typography,
 } from '@mui/material';
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import type { GridColDef, GridRenderCellParams, GridValidRowModel } from '@mui/x-data-grid';
+import type { UseQueryResult } from '@tanstack/react-query';
 import DataTable from '../../components/DataTable';
 import JsonDialog from '../../components/JsonDialog';
+import RestoreBackupDialog from '../../components/RestoreBackupDialog';
 import FeedbackSnackbar, { type Feedback } from '../../components/FeedbackSnackbar';
 import {
     useWorkspace, useWorkers, useWorkflows, useTaskQueues, useTaskChannels,
     useActivities, useBackupWorkspace, useRestoreWorkspace,
 } from '../../hooks/useTwilioQueries';
+import { useServerPagination } from '../../hooks/useServerPagination';
 import type {
-    ActivityDTO, TaskChannelDTO, TaskQueueDTO, WorkerDTO, WorkflowDTO,
+    ActivityDTO, Page, TaskChannelDTO, TaskQueueDTO, WorkerDTO, WorkflowDTO,
 } from '../../types/twilio';
 
 const availableChip = (available: boolean | null) => (
@@ -69,6 +71,67 @@ const activityColumns: GridColDef<ActivityDTO>[] = [
     { field: 'date_updated', headerName: 'Updated', width: 200 },
 ];
 
+/** Presentational half of a paginated resource tab: table + error + cursor pagination. */
+function ResourceTabView<T extends GridValidRowModel & { sid: string }>({ columns, query, pagination }: {
+    columns: GridColDef<T>[];
+    query: UseQueryResult<Page<T>, Error>;
+    pagination: ReturnType<typeof useServerPagination>;
+}) {
+    const { data, isLoading, isError, error } = query;
+    const { paginationModel, onPaginationModelChange, registerNextPageToken } = pagination;
+    useEffect(() => registerNextPageToken(data?.nextPageToken), [data?.nextPageToken, registerNextPageToken]);
+
+    return (
+        <>
+            {isError && <Alert severity="error" sx={{ mb: 2 }}>{error.message}</Alert>}
+            <DataTable
+                rows={data?.items ?? []}
+                columns={columns}
+                loading={isLoading}
+                getRowId={(row) => row.sid}
+                serverPagination={{
+                    paginationModel,
+                    onPaginationModelChange,
+                    hasNextPage: Boolean(data?.nextPageToken),
+                }}
+            />
+        </>
+    );
+}
+
+// Each tab is its own component so it owns its query + pagination state and
+// only the visible resource is fetched.
+
+function WorkersTab({ workspaceSid }: { workspaceSid: string }) {
+    const pagination = useServerPagination();
+    const query = useWorkers(workspaceSid, { pageSize: pagination.paginationModel.pageSize, pageToken: pagination.pageToken });
+    return <ResourceTabView columns={workerColumns} query={query} pagination={pagination} />;
+}
+
+function WorkflowsTab({ workspaceSid }: { workspaceSid: string }) {
+    const pagination = useServerPagination();
+    const query = useWorkflows(workspaceSid, { pageSize: pagination.paginationModel.pageSize, pageToken: pagination.pageToken });
+    return <ResourceTabView columns={workflowColumns} query={query} pagination={pagination} />;
+}
+
+function TaskQueuesTab({ workspaceSid }: { workspaceSid: string }) {
+    const pagination = useServerPagination();
+    const query = useTaskQueues(workspaceSid, { pageSize: pagination.paginationModel.pageSize, pageToken: pagination.pageToken });
+    return <ResourceTabView columns={taskQueueColumns} query={query} pagination={pagination} />;
+}
+
+function TaskChannelsTab({ workspaceSid }: { workspaceSid: string }) {
+    const pagination = useServerPagination();
+    const query = useTaskChannels(workspaceSid, { pageSize: pagination.paginationModel.pageSize, pageToken: pagination.pageToken });
+    return <ResourceTabView columns={taskChannelColumns} query={query} pagination={pagination} />;
+}
+
+function ActivitiesTab({ workspaceSid }: { workspaceSid: string }) {
+    const pagination = useServerPagination();
+    const query = useActivities(workspaceSid, { pageSize: pagination.paginationModel.pageSize, pageToken: pagination.pageToken });
+    return <ResourceTabView columns={activityColumns} query={query} pagination={pagination} />;
+}
+
 const TABS = ['Workers', 'Workflows', 'Task Queues', 'Task Channels', 'Activities'] as const;
 
 export default function TaskRouter() {
@@ -77,16 +140,9 @@ export default function TaskRouter() {
     const [tab, setTab] = useState(0);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [restoreOpen, setRestoreOpen] = useState(false);
-    const [fileName, setFileName] = useState('');
     const [feedback, setFeedback] = useState<Feedback | null>(null);
 
     const workspace = useWorkspace(workspaceSid);
-    const workers = useWorkers(workspaceSid);
-    const workflows = useWorkflows(workspaceSid);
-    const taskQueues = useTaskQueues(workspaceSid);
-    const taskChannels = useTaskChannels(workspaceSid);
-    const activities = useActivities(workspaceSid);
-
     const backupWorkspace = useBackupWorkspace();
     const restoreWorkspace = useRestoreWorkspace();
 
@@ -103,27 +159,15 @@ export default function TaskRouter() {
         });
     };
 
-    const handleRestore = () => {
+    const handleRestore = (fileName: string) => {
         restoreWorkspace.mutate(fileName, {
             onSuccess: (res) => {
-                setFeedback({ severity: 'success', message: `${res.message} — new workspace SID: ${res.newFlowSid}` });
+                setFeedback({ severity: 'success', message: `${res.message} — new workspace SID: ${res.newWorkspaceSid}` });
                 setRestoreOpen(false);
-                setFileName('');
             },
             onError: (e) => setFeedback({ severity: 'error', message: `Restore failed: ${e.message}` }),
         });
     };
-
-    const tables = [
-        <DataTable key="workers" rows={workers.data ?? []} columns={workerColumns} loading={workers.isLoading} getRowId={(r) => r.sid} />,
-        <DataTable key="workflows" rows={workflows.data ?? []} columns={workflowColumns} loading={workflows.isLoading} getRowId={(r) => r.sid} />,
-        <DataTable key="taskQueues" rows={taskQueues.data ?? []} columns={taskQueueColumns} loading={taskQueues.isLoading} getRowId={(r) => r.sid} />,
-        <DataTable key="taskChannels" rows={taskChannels.data ?? []} columns={taskChannelColumns} loading={taskChannels.isLoading} getRowId={(r) => r.sid} />,
-        <DataTable key="activities" rows={activities.data ?? []} columns={activityColumns} loading={activities.isLoading} getRowId={(r) => r.sid} />,
-    ];
-
-    const queries = [workers, workflows, taskQueues, taskChannels, activities];
-    const activeQuery = queries[tab];
 
     return (
         <Box>
@@ -178,10 +222,11 @@ export default function TaskRouter() {
                     <Tabs value={tab} onChange={(_, value: number) => setTab(value)} sx={{ mb: 2 }}>
                         {TABS.map((label) => <Tab key={label} label={label} />)}
                     </Tabs>
-                    {activeQuery.isError && (
-                        <Alert severity="error" sx={{ mb: 2 }}>{activeQuery.error.message}</Alert>
-                    )}
-                    {tables[tab]}
+                    {tab === 0 && <WorkersTab key={workspaceSid} workspaceSid={workspaceSid} />}
+                    {tab === 1 && <WorkflowsTab key={workspaceSid} workspaceSid={workspaceSid} />}
+                    {tab === 2 && <TaskQueuesTab key={workspaceSid} workspaceSid={workspaceSid} />}
+                    {tab === 3 && <TaskChannelsTab key={workspaceSid} workspaceSid={workspaceSid} />}
+                    {tab === 4 && <ActivitiesTab key={workspaceSid} workspaceSid={workspaceSid} />}
                 </>
             )}
 
@@ -193,29 +238,14 @@ export default function TaskRouter() {
                 onClose={() => setDetailsOpen(false)}
             />
 
-            <Dialog open={restoreOpen} onClose={() => setRestoreOpen(false)} fullWidth>
-                <DialogTitle>Restore workspace from backup</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        fullWidth
-                        margin="dense"
-                        label="Backup file name"
-                        value={fileName}
-                        onChange={(e) => setFileName(e.target.value)}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setRestoreOpen(false)}>Cancel</Button>
-                    <Button
-                        variant="contained"
-                        disabled={fileName.trim() === '' || restoreWorkspace.isPending}
-                        onClick={handleRestore}
-                    >
-                        {restoreWorkspace.isPending ? 'Restoring...' : 'Restore'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <RestoreBackupDialog
+                open={restoreOpen}
+                title="Restore workspace from backup"
+                prefix="workspace/"
+                restoring={restoreWorkspace.isPending}
+                onClose={() => setRestoreOpen(false)}
+                onRestore={handleRestore}
+            />
 
             <FeedbackSnackbar feedback={feedback} onClose={() => setFeedback(null)} />
         </Box>

@@ -6,11 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import twilio_spa_fetch_backend.dto.*;
 import twilio_spa_fetch_backend.service.TaskRouterService;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/TaskRouter")
+@RequestMapping("/api/v1/task-router/workspaces")
 public class TaskRouterController {
 
     @Autowired
@@ -21,77 +20,90 @@ public class TaskRouterController {
         return ResponseEntity.ok(taskRouterService.getWorkspaceBySid(workspaceSid));
     }
 
-    @GetMapping("/CompleteWorkspace/{workspaceSid}")
+    @GetMapping("/{workspaceSid}/complete")
     public ResponseEntity<WorkspaceDTO> getCompleteWorkspaceConfiguration(@PathVariable String workspaceSid) {
         return ResponseEntity.ok(taskRouterService.getFullWorkspace(workspaceSid));
     }
 
-    @GetMapping("/{workspaceSid}/Workers/{workerSid}")
+    @GetMapping("/{workspaceSid}/workers")
+    public ResponseEntity<PageDTO<WorkerDTO>> getWorkers(
+            @PathVariable String workspaceSid,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String pageToken) {
+        return ResponseEntity.ok(taskRouterService.getWorkers(workspaceSid, pageSize, pageToken));
+    }
+
+    @GetMapping("/{workspaceSid}/workers/{workerSid}")
     public ResponseEntity<WorkerDTO> getWorkerBySid(@PathVariable String workspaceSid, @PathVariable String workerSid) {
         return ResponseEntity.ok(taskRouterService.getWorkerBySid(workspaceSid, workerSid));
     }
 
-    @GetMapping("/{workspaceSid}/Workers")
-    public ResponseEntity<List<WorkerDTO>> getAllWorkers(@PathVariable String workspaceSid) {
-        return ResponseEntity.ok(taskRouterService.getAllWorkers(workspaceSid));
+    @GetMapping("/{workspaceSid}/workflows")
+    public ResponseEntity<PageDTO<WorkflowDTO>> getWorkflows(
+            @PathVariable String workspaceSid,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String pageToken) {
+        return ResponseEntity.ok(taskRouterService.getWorkflows(workspaceSid, pageSize, pageToken));
     }
 
-    @GetMapping("/{workspaceSid}/Workflows/{workflowSid}")
+    @GetMapping("/{workspaceSid}/workflows/{workflowSid}")
     public ResponseEntity<WorkflowDTO> getWorkflowBySid(@PathVariable String workspaceSid, @PathVariable String workflowSid) {
         return ResponseEntity.ok(taskRouterService.getWorkflowBySid(workspaceSid, workflowSid));
     }
 
-    @GetMapping("/{workspaceSid}/Workflows")
-    public ResponseEntity<List<WorkflowDTO>> getAllWorkflows(@PathVariable String workspaceSid) {
-        return ResponseEntity.ok(taskRouterService.getAllWorkflows(workspaceSid));
+    @GetMapping("/{workspaceSid}/task-queues")
+    public ResponseEntity<PageDTO<TaskQueueDTO>> getTaskQueues(
+            @PathVariable String workspaceSid,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String pageToken) {
+        return ResponseEntity.ok(taskRouterService.getTaskQueues(workspaceSid, pageSize, pageToken));
     }
 
-    @GetMapping("/{workspaceSid}/TaskQueues/{taskQueueSid}")
+    @GetMapping("/{workspaceSid}/task-queues/{taskQueueSid}")
     public ResponseEntity<TaskQueueDTO> getTaskQueueBySid(@PathVariable String workspaceSid, @PathVariable String taskQueueSid) {
         return ResponseEntity.ok(taskRouterService.getTaskQueueBySid(workspaceSid, taskQueueSid));
     }
 
-    @GetMapping("/{workspaceSid}/TaskQueues")
-    public ResponseEntity<List<TaskQueueDTO>> getAllQueues(@PathVariable String workspaceSid) {
-        return ResponseEntity.ok(taskRouterService.getAllQueues(workspaceSid));
+    @GetMapping("/{workspaceSid}/task-channels")
+    public ResponseEntity<PageDTO<TaskChannelDTO>> getTaskChannels(
+            @PathVariable String workspaceSid,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String pageToken) {
+        return ResponseEntity.ok(taskRouterService.getTaskChannels(workspaceSid, pageSize, pageToken));
     }
 
-    @GetMapping("/{workspaceSid}/TaskChannels/{taskChannelSid}")
+    @GetMapping("/{workspaceSid}/task-channels/{taskChannelSid}")
     public ResponseEntity<TaskChannelDTO> getTaskChannelBySid(@PathVariable String workspaceSid, @PathVariable String taskChannelSid) {
         return ResponseEntity.ok(taskRouterService.getTaskChannelBySid(workspaceSid, taskChannelSid));
     }
 
-    @GetMapping("/{workspaceSid}/TaskChannels")
-    public ResponseEntity<List<TaskChannelDTO>> getAllChannels(@PathVariable String workspaceSid) {
-        return ResponseEntity.ok(taskRouterService.getAllChannels(workspaceSid));
+    @GetMapping("/{workspaceSid}/activities")
+    public ResponseEntity<PageDTO<ActivityDTO>> getActivities(
+            @PathVariable String workspaceSid,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String pageToken) {
+        return ResponseEntity.ok(taskRouterService.getActivities(workspaceSid, pageSize, pageToken));
     }
 
-    @GetMapping("/{workspaceSid}/Activities/{activitySid}")
+    @GetMapping("/{workspaceSid}/activities/{activitySid}")
     public ResponseEntity<ActivityDTO> getActivityBySid(@PathVariable String workspaceSid, @PathVariable String activitySid) {
         return ResponseEntity.ok(taskRouterService.getActivityBySid(workspaceSid, activitySid));
     }
 
-    @GetMapping("/{workspaceSid}/Activities")
-    public ResponseEntity<List<ActivityDTO>> getAllActivities(@PathVariable String workspaceSid) {
-        return ResponseEntity.ok(taskRouterService.getAllActivities(workspaceSid));
+    @PostMapping("/{workspaceSid}/backup")
+    public ResponseEntity<String> backupWorkspace(@PathVariable String workspaceSid) {
+        return ResponseEntity.ok(taskRouterService.backupWorkspace(workspaceSid));
     }
 
-    @PostMapping("/Workspace/backup/{workspaceSid}")
-    public ResponseEntity<Object> backupAllFlows(@PathVariable String workspaceSid) {
-        String fileUrls = taskRouterService.backupWorkspace(workspaceSid);
-        return ResponseEntity.ok(fileUrls);
-    }
-
-    @PostMapping("/Workspace/restore")
+    @PostMapping("/restore")
     public ResponseEntity<Map<String, String>> restoreWorkspace(@RequestBody Map<String, String> request) {
         String fileName = request.get("fileName");
         if (fileName == null || fileName.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "fileName is required"));
+            throw new IllegalArgumentException("fileName is required");
         }
         String newWorkspaceSid = taskRouterService.restoreWorkspace(fileName);
         return ResponseEntity.ok(Map.of(
-                "message", "Flow restored sucessfully", "newFlowSid", newWorkspaceSid,  "restoredFrom", fileName
+                "message", "Workspace restored successfully", "newWorkspaceSid", newWorkspaceSid, "restoredFrom", fileName
         ));
     }
 

@@ -26,7 +26,7 @@ A full-stack application for exploring and backing up Twilio account resources. 
 ## Features
 
 - **Login with Twilio credentials** — the backend validates the Account SID / Auth Token against Twilio and returns a JWT used on every subsequent request. The session survives page refreshes.
-- **Studio Flows** — list flows, inspect a flow's JSON definition, back up a single flow or all flows to S3, and restore a deleted flow from a backup file.
+- **Studio Flows** — list flows, inspect a flow's JSON definition, back up a single flow or all flows to S3, and restore a deleted flow by picking a backup from the list.
 - **Phone Numbers** — list the account's incoming phone numbers with status and webhook URLs.
 - **Conversations** — list the account's conversations with state and service SIDs.
 - **TaskRouter explorer** — enter a Workspace SID and browse its Workers, Workflows, Task Queues, Task Channels and Activities; view the full workspace configuration; back up and restore an entire workspace.
@@ -115,30 +115,33 @@ Open `http://localhost:5173` and log in with your Twilio **Account SID** and **A
 
 ## API overview
 
-All endpoints except `/auth/**` require an `Authorization: Bearer <jwt>` header.
+Interactive documentation: **Swagger UI** at `http://localhost:8080/swagger-ui.html` (OpenAPI JSON at `/v3/api-docs`).
+
+All endpoints except `/api/v1/auth/**` require an `Authorization: Bearer <jwt>` header. List endpoints are cursor-paginated: they accept `pageSize` (default 20, max 100) and `pageToken`, and return `{ items, nextPageToken }`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/auth/login` | Login with `{ accountSid, authToken }`, returns JWT |
-| GET | `/auth/validate` | Validate a JWT |
-| POST | `/auth/logout` | Logout |
-| GET | `/Studio/Flows` | List Studio Flows |
-| GET | `/Studio/Flows/{sid}` | Get a flow |
-| GET | `/Studio/Flows/{sid}/definition` | Get a flow's JSON definition |
-| POST | `/Studio/Flows/{sid}/backup` | Back up one flow to S3 |
-| POST | `/Studio/Flows/backup` | Back up all flows |
-| POST | `/Studio/Flows/restore` | Restore a flow from `{ fileName }` |
-| GET | `/PhoneNumber/List` | List incoming phone numbers |
-| GET | `/Conversation/List` | List conversations |
-| GET | `/TaskRouter/{workspaceSid}` | Get a workspace |
-| GET | `/TaskRouter/CompleteWorkspace/{workspaceSid}` | Workspace with all child resources |
-| GET | `/TaskRouter/{workspaceSid}/Workers` | List workers (also `/Workers/{sid}`) |
-| GET | `/TaskRouter/{workspaceSid}/Workflows` | List workflows (also `/Workflows/{sid}`) |
-| GET | `/TaskRouter/{workspaceSid}/TaskQueues` | List task queues (also `/TaskQueues/{sid}`) |
-| GET | `/TaskRouter/{workspaceSid}/TaskChannels` | List task channels (also `/TaskChannels/{sid}`) |
-| GET | `/TaskRouter/{workspaceSid}/Activities` | List activities (also `/Activities/{sid}`) |
-| POST | `/TaskRouter/Workspace/backup/{workspaceSid}` | Back up a workspace to S3 |
-| POST | `/TaskRouter/Workspace/restore` | Restore a workspace from `{ fileName }` |
+| POST | `/api/v1/auth/login` | Login with `{ accountSid, authToken }`, returns JWT |
+| GET | `/api/v1/auth/validate` | Validate a JWT |
+| POST | `/api/v1/auth/logout` | Logout |
+| GET | `/api/v1/studio/flows` | List Studio Flows (paginated) |
+| GET | `/api/v1/studio/flows/{sid}` | Get a flow |
+| GET | `/api/v1/studio/flows/{sid}/definition` | Get a flow's JSON definition |
+| POST | `/api/v1/studio/flows/{sid}/backup` | Back up one flow to S3 |
+| POST | `/api/v1/studio/flows/backup` | Back up all flows |
+| POST | `/api/v1/studio/flows/restore` | Restore a flow from `{ fileName }` |
+| GET | `/api/v1/phone-numbers` | List incoming phone numbers (paginated) |
+| GET | `/api/v1/conversations` | List conversations (paginated) |
+| GET | `/api/v1/task-router/workspaces/{sid}` | Get a workspace |
+| GET | `/api/v1/task-router/workspaces/{sid}/complete` | Workspace with all child resources |
+| GET | `/api/v1/task-router/workspaces/{sid}/workers` | List workers (paginated; also `/workers/{workerSid}`) |
+| GET | `/api/v1/task-router/workspaces/{sid}/workflows` | List workflows (paginated; also `/workflows/{workflowSid}`) |
+| GET | `/api/v1/task-router/workspaces/{sid}/task-queues` | List task queues (paginated; also `/task-queues/{queueSid}`) |
+| GET | `/api/v1/task-router/workspaces/{sid}/task-channels` | List task channels (paginated; also `/task-channels/{channelSid}`) |
+| GET | `/api/v1/task-router/workspaces/{sid}/activities` | List activities (paginated; also `/activities/{activitySid}`) |
+| POST | `/api/v1/task-router/workspaces/{sid}/backup` | Back up a workspace to S3 |
+| POST | `/api/v1/task-router/workspaces/restore` | Restore a workspace from `{ fileName }` |
+| GET | `/api/v1/backups?prefix=flows/` | List backup files (`flows/` or `workspace/`) |
 
 ## Tech stack
 

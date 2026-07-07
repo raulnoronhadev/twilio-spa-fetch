@@ -15,12 +15,16 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import twilio_spa_fetch_backend.dto.BackupFileDTO;
 import twilio_spa_fetch_backend.exception.StorageException;
 import twilio_spa_fetch_backend.ports.StoragePort;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Comparator;
+import java.util.List;
 
 @Component
 public class S3StorageAdapter implements StoragePort {
@@ -70,6 +74,18 @@ public class S3StorageAdapter implements StoragePort {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(fileName).contentType(contentType).build();
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
         return String.format("%s/%s/%s", endpoint, bucketName, fileName);
+    }
+
+    @Override
+    public List<BackupFileDTO> listFiles(String prefix) {
+        ListObjectsV2Request request = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix(prefix)
+                .build();
+        return s3Client.listObjectsV2Paginator(request).contents().stream()
+                .map(object -> new BackupFileDTO(object.key(), object.size(), object.lastModified()))
+                .sorted(Comparator.comparing(BackupFileDTO::lastModified).reversed())
+                .toList();
     }
 
     @Override

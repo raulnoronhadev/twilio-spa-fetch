@@ -1,7 +1,6 @@
 package twilio_spa_fetch_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.twilio.rest.studio.v2.Flow;
 
 import java.net.URI;
 import java.util.Date;
@@ -14,7 +13,7 @@ public record FlowDTO(
         @JsonProperty("friendly_name") String friendlyName,
         @JsonProperty("date_created") Date dateCreated,
         @JsonProperty("date_updated") Date dateUpdated,
-        Flow.Status status,
+        String status,
         Integer revision,
         String commit_message,
         @JsonProperty("webhook_url") URI webhookUrl,

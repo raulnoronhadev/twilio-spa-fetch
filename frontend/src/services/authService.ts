@@ -13,12 +13,12 @@ export interface LoginResponse {
 }
 
 export async function loginRequest(credentials: LoginCredentials): Promise<LoginResponse> {
-    return apiRequest<LoginResponse>('/auth/login', {
+    return apiRequest<LoginResponse>('/api/v1/auth/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
     });
 }
 
 export async function logoutRequest(): Promise<{ message: string }> {
-    return apiRequest<{ message: string }>('/auth/logout', { method: 'POST' });
+    return apiRequest<{ message: string }>('/api/v1/auth/logout', { method: 'POST' });
 }

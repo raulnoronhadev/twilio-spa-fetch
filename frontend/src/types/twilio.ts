@@ -1,5 +1,22 @@
 // Types mirroring the backend DTOs (JSON uses snake_case via @JsonProperty).
 
+/** Cursor-based page returned by list endpoints. */
+export interface Page<T> {
+    items: T[];
+    nextPageToken: string | null;
+}
+
+export interface PageParams {
+    pageSize: number;
+    pageToken?: string;
+}
+
+export interface BackupFile {
+    fileName: string;
+    size: number;
+    lastModified: string;
+}
+
 export interface FlowDTO {
     account_sid: string;
     sid: string;
@@ -21,8 +38,7 @@ export interface FlowDTO {
 export interface PhoneDTO {
     account_sid: string;
     friendly_name: string;
-    // com.twilio.type.PhoneNumber serializes as an object, not a plain string
-    phone_number: { endpoint: string } | null;
+    phone_number: string | null;
     phone_number_sid: string | null;
     identity_sid: string | null;
     date_created: string | null;
@@ -139,8 +155,14 @@ export interface WorkspaceDTO {
     activities: ActivityDTO[] | null;
 }
 
-export interface RestoreResponse {
+export interface RestoreFlowResponse {
     message: string;
     newFlowSid: string;
+    restoredFrom: string;
+}
+
+export interface RestoreWorkspaceResponse {
+    message: string;
+    newWorkspaceSid: string;
     restoredFrom: string;
 }

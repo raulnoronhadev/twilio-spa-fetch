@@ -1,7 +1,6 @@
 package twilio_spa_fetch_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.twilio.rest.taskrouter.v1.Workspace;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -20,7 +19,7 @@ public record WorkspaceDTO(
         @JsonProperty("multi_task_enabled") Boolean multiTaskEnabled,
         @JsonProperty("timeout_activity_name") String timeoutActivityName,
         @JsonProperty("timeout_activity_sid") String timeoutActivitySid,
-        @JsonProperty("prioritize_queue_order") Workspace.QueueOrder prioritizeQueueOrder,
+        @JsonProperty("prioritize_queue_order") String prioritizeQueueOrder,
         URI url,
         List<WorkflowDTO> workflows,
         List<WorkerDTO> workers,

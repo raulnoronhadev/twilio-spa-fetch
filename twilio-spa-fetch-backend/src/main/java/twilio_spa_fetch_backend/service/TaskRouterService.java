@@ -1,7 +1,11 @@
 package twilio_spa_fetch_backend.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.twilio.base.Page;
+import com.twilio.base.Reader;
+import com.twilio.base.Resource;
 import com.twilio.base.ResourceSet;
 import com.twilio.http.TwilioRestClient;
+import com.twilio.rest.Domains;
 import com.twilio.rest.taskrouter.v1.Workspace;
 import com.twilio.rest.taskrouter.v1.workspace.*;
 import org.slf4j.Logger;
@@ -11,6 +15,7 @@ import org.springframework.stereotype.Service;
 import twilio_spa_fetch_backend.dto.*;
 import twilio_spa_fetch_backend.mapper.TaskRouterMapper;
 import twilio_spa_fetch_backend.security.TwilioClientProvider;
+import twilio_spa_fetch_backend.util.PageTokenCodec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -56,6 +61,40 @@ public class TaskRouterService {
         return taskRouterMapper.workspaceToWorkspaceDTO(
                 workspace, workflows, workers, channels, queues, activities
         );
+    }
+
+    /** Fetches one page of any TaskRouter child resource and maps its records. */
+    private <T extends Resource, D> PageDTO<D> readPage(Reader<T> reader, int pageSize, String pageToken,
+                                                        java.util.function.Function<List<T>, List<D>> mapper) {
+        TwilioRestClient client = twilioClientProvider.getClient();
+        reader.pageSize(Math.clamp(pageSize, 1, 100));
+        Page<T> page = pageToken == null
+                ? reader.firstPage(client)
+                : reader.getPage(PageTokenCodec.decode(pageToken), client);
+        String nextToken = page.hasNextPage()
+                ? PageTokenCodec.encode(page.getNextPageUrl(Domains.TASKROUTER.toString()))
+                : null;
+        return new PageDTO<>(mapper.apply(page.getRecords()), nextToken);
+    }
+
+    public PageDTO<WorkerDTO> getWorkers(String workspaceSid, int pageSize, String pageToken) {
+        return readPage(Worker.reader(workspaceSid), pageSize, pageToken, taskRouterMapper::workerToWorkerDTOList);
+    }
+
+    public PageDTO<WorkflowDTO> getWorkflows(String workspaceSid, int pageSize, String pageToken) {
+        return readPage(Workflow.reader(workspaceSid), pageSize, pageToken, taskRouterMapper::workflowToWorkflowDTOList);
+    }
+
+    public PageDTO<TaskQueueDTO> getTaskQueues(String workspaceSid, int pageSize, String pageToken) {
+        return readPage(TaskQueue.reader(workspaceSid), pageSize, pageToken, taskRouterMapper::taskQueueToTaskQueueDTOList);
+    }
+
+    public PageDTO<TaskChannelDTO> getTaskChannels(String workspaceSid, int pageSize, String pageToken) {
+        return readPage(TaskChannel.reader(workspaceSid), pageSize, pageToken, taskRouterMapper::taskChannelToTaskChannelDTOList);
+    }
+
+    public PageDTO<ActivityDTO> getActivities(String workspaceSid, int pageSize, String pageToken) {
+        return readPage(Activity.reader(workspaceSid), pageSize, pageToken, taskRouterMapper::activityToActivityDTOList);
     }
 
     public WorkerDTO getWorkerBySid(String workspaceSid, String workerSid) {

@@ -1,15 +1,19 @@
 package twilio_spa_fetch_backend.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twilio.base.Page;
 import com.twilio.http.TwilioRestClient;
+import com.twilio.rest.Domains;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.twilio.rest.studio.v2.Flow;
 import com.twilio.base.ResourceSet;
 import twilio_spa_fetch_backend.dto.FlowDTO;
+import twilio_spa_fetch_backend.dto.PageDTO;
 import twilio_spa_fetch_backend.mapper.StudioMapper;
 import twilio_spa_fetch_backend.ports.StoragePort;
 import twilio_spa_fetch_backend.security.TwilioClientProvider;
+import twilio_spa_fetch_backend.util.PageTokenCodec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -37,6 +41,20 @@ public class StudioFlowService {
         return studioMapper.flowToFlowDTO(flow);
     }
 
+    public PageDTO<FlowDTO> getFlows(int pageSize, String pageToken) {
+        TwilioRestClient client = twilioClientProvider.getClient();
+        var reader = Flow.reader().pageSize(Math.clamp(pageSize, 1, 100));
+        Page<Flow> page = pageToken == null
+                ? reader.firstPage(client)
+                : reader.getPage(PageTokenCodec.decode(pageToken), client);
+        List<FlowDTO> items = page.getRecords().stream().map(studioMapper::flowToFlowDTO).toList();
+        String nextToken = page.hasNextPage()
+                ? PageTokenCodec.encode(page.getNextPageUrl(Domains.STUDIO.toString()))
+                : null;
+        return new PageDTO<>(items, nextToken);
+    }
+
+    // Unpaginated variant kept for backups, which need every flow with its definition.
     public List<FlowDTO> getAllFlows() {
         TwilioRestClient client = twilioClientProvider.getClient();
         ResourceSet<Flow> flows = Flow.reader().read(client);
@@ -63,7 +81,7 @@ public class StudioFlowService {
     public String restoreDeletedFlow(String fileName) {
         byte[] jsonBytes = storagePort.downloadFile(fileName);
         FlowDTO flowDTO = parseFlowBackup(jsonBytes, fileName);
-        Flow newFlow = Flow.creator(flowDTO.friendlyName(), flowDTO.status(), flowDTO.definition())
+        Flow newFlow = Flow.creator(flowDTO.friendlyName(), Flow.Status.forValue(flowDTO.status()), flowDTO.definition())
                 .create(twilioClientProvider.getClient());
         return newFlow.getSid();
     }

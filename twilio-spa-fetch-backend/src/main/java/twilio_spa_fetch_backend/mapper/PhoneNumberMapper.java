@@ -15,4 +15,9 @@ public interface PhoneNumberMapper {
 
     List<PhoneDTO> phoneNumberToPhoneNumberDTOList(List<IncomingPhoneNumber> phoneNumber);
 
+    // Expose the raw E.164 string instead of the SDK's PhoneNumber wrapper object.
+    default String map(com.twilio.type.PhoneNumber phoneNumber) {
+        return phoneNumber == null ? null : phoneNumber.getEndpoint();
+    }
+
 }

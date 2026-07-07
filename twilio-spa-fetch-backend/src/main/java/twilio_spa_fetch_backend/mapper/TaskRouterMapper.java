@@ -26,4 +26,9 @@ public interface TaskRouterMapper {
     List<TaskChannelDTO> taskChannelToTaskChannelDTOList(List<TaskChannel> taskChannel);
     ActivityDTO activityToActivityDTO(Activity activity);
     List<ActivityDTO> activityToActivityDTOList(List<Activity> activity);
+
+    // Twilio enums expose their wire value ("FIFO"/"LIFO") via toString().
+    default String map(Workspace.QueueOrder queueOrder) {
+        return queueOrder == null ? null : queueOrder.toString();
+    }
 }

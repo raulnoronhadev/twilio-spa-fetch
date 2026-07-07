@@ -1,24 +1,25 @@
-import { useState } from 'react';
-import {
-    Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent,
-    DialogTitle, Stack, TextField, Typography,
-} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Alert, Box, Button, Chip, Stack, Typography } from '@mui/material';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import DataTable from '../../components/DataTable';
 import JsonDialog from '../../components/JsonDialog';
+import RestoreBackupDialog from '../../components/RestoreBackupDialog';
 import FeedbackSnackbar, { type Feedback } from '../../components/FeedbackSnackbar';
 import {
     useFlows, useFlowDefinition, useBackupFlow, useBackupAllFlows, useRestoreFlow,
 } from '../../hooks/useTwilioQueries';
+import { useServerPagination } from '../../hooks/useServerPagination';
 import type { FlowDTO } from '../../types/twilio';
 
 export default function StudioFlows() {
     const [selectedFlowSid, setSelectedFlowSid] = useState<string | null>(null);
     const [restoreOpen, setRestoreOpen] = useState(false);
-    const [fileName, setFileName] = useState('');
     const [feedback, setFeedback] = useState<Feedback | null>(null);
 
-    const { data: flows, isLoading, isError, error } = useFlows();
+    const { paginationModel, pageToken, onPaginationModelChange, registerNextPageToken } = useServerPagination();
+    const { data, isLoading, isError, error } = useFlows({ pageSize: paginationModel.pageSize, pageToken });
+    useEffect(() => registerNextPageToken(data?.nextPageToken), [data?.nextPageToken, registerNextPageToken]);
+
     const definition = useFlowDefinition(selectedFlowSid);
 
     const backupFlow = useBackupFlow();
@@ -39,12 +40,11 @@ export default function StudioFlows() {
         });
     };
 
-    const handleRestore = () => {
+    const handleRestore = (fileName: string) => {
         restoreFlow.mutate(fileName, {
             onSuccess: (res) => {
                 setFeedback({ severity: 'success', message: `${res.message} — new flow SID: ${res.newFlowSid}` });
                 setRestoreOpen(false);
-                setFileName('');
             },
             onError: (e) => setFeedback({ severity: 'error', message: `Restore failed: ${e.message}` }),
         });
@@ -102,10 +102,15 @@ export default function StudioFlows() {
             {isError && <Alert severity="error" sx={{ mb: 2 }}>{error.message}</Alert>}
 
             <DataTable
-                rows={flows ?? []}
+                rows={data?.items ?? []}
                 columns={columns}
                 loading={isLoading}
                 getRowId={(row) => row.sid}
+                serverPagination={{
+                    paginationModel,
+                    onPaginationModelChange,
+                    hasNextPage: Boolean(data?.nextPageToken),
+                }}
             />
 
             <JsonDialog
@@ -116,29 +121,14 @@ export default function StudioFlows() {
                 onClose={() => setSelectedFlowSid(null)}
             />
 
-            <Dialog open={restoreOpen} onClose={() => setRestoreOpen(false)} fullWidth>
-                <DialogTitle>Restore flow from backup</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        fullWidth
-                        margin="dense"
-                        label="Backup file name"
-                        value={fileName}
-                        onChange={(e) => setFileName(e.target.value)}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setRestoreOpen(false)}>Cancel</Button>
-                    <Button
-                        variant="contained"
-                        disabled={fileName.trim() === '' || restoreFlow.isPending}
-                        onClick={handleRestore}
-                    >
-                        {restoreFlow.isPending ? 'Restoring...' : 'Restore'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <RestoreBackupDialog
+                open={restoreOpen}
+                title="Restore flow from backup"
+                prefix="flows/"
+                restoring={restoreFlow.isPending}
+                onClose={() => setRestoreOpen(false)}
+                onRestore={handleRestore}
+            />
 
             <FeedbackSnackbar feedback={feedback} onClose={() => setFeedback(null)} />
         </Box>

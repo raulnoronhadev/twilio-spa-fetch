@@ -1,12 +1,14 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import * as twilio from '../services/twilioService';
+import type { PageParams } from '../types/twilio';
 
 // --- Studio Flows ---
 
-export function useFlows() {
+export function useFlows(params: PageParams) {
     return useQuery({
-        queryKey: ['flows'],
-        queryFn: twilio.getAllFlows,
+        queryKey: ['flows', params],
+        queryFn: () => twilio.getFlows(params),
+        placeholderData: keepPreviousData,
     });
 }
 
@@ -32,19 +34,21 @@ export function useRestoreFlow() {
 
 // --- Phone Numbers ---
 
-export function usePhoneNumbers() {
+export function usePhoneNumbers(params: PageParams) {
     return useQuery({
-        queryKey: ['phoneNumbers'],
-        queryFn: twilio.getAllPhoneNumbers,
+        queryKey: ['phoneNumbers', params],
+        queryFn: () => twilio.getPhoneNumbers(params),
+        placeholderData: keepPreviousData,
     });
 }
 
 // --- Conversations ---
 
-export function useConversations() {
+export function useConversations(params: PageParams) {
     return useQuery({
-        queryKey: ['conversations'],
-        queryFn: twilio.getConversations,
+        queryKey: ['conversations', params],
+        queryFn: () => twilio.getConversations(params),
+        placeholderData: keepPreviousData,
     });
 }
 
@@ -58,43 +62,43 @@ export function useWorkspace(workspaceSid: string | null) {
     });
 }
 
-export function useWorkers(workspaceSid: string | null) {
+export function useWorkers(workspaceSid: string, params: PageParams) {
     return useQuery({
-        queryKey: ['taskRouter', workspaceSid, 'workers'],
-        queryFn: () => twilio.getWorkers(workspaceSid!),
-        enabled: workspaceSid !== null,
+        queryKey: ['taskRouter', workspaceSid, 'workers', params],
+        queryFn: () => twilio.getWorkers(workspaceSid, params),
+        placeholderData: keepPreviousData,
     });
 }
 
-export function useWorkflows(workspaceSid: string | null) {
+export function useWorkflows(workspaceSid: string, params: PageParams) {
     return useQuery({
-        queryKey: ['taskRouter', workspaceSid, 'workflows'],
-        queryFn: () => twilio.getWorkflows(workspaceSid!),
-        enabled: workspaceSid !== null,
+        queryKey: ['taskRouter', workspaceSid, 'workflows', params],
+        queryFn: () => twilio.getWorkflows(workspaceSid, params),
+        placeholderData: keepPreviousData,
     });
 }
 
-export function useTaskQueues(workspaceSid: string | null) {
+export function useTaskQueues(workspaceSid: string, params: PageParams) {
     return useQuery({
-        queryKey: ['taskRouter', workspaceSid, 'taskQueues'],
-        queryFn: () => twilio.getTaskQueues(workspaceSid!),
-        enabled: workspaceSid !== null,
+        queryKey: ['taskRouter', workspaceSid, 'taskQueues', params],
+        queryFn: () => twilio.getTaskQueues(workspaceSid, params),
+        placeholderData: keepPreviousData,
     });
 }
 
-export function useTaskChannels(workspaceSid: string | null) {
+export function useTaskChannels(workspaceSid: string, params: PageParams) {
     return useQuery({
-        queryKey: ['taskRouter', workspaceSid, 'taskChannels'],
-        queryFn: () => twilio.getTaskChannels(workspaceSid!),
-        enabled: workspaceSid !== null,
+        queryKey: ['taskRouter', workspaceSid, 'taskChannels', params],
+        queryFn: () => twilio.getTaskChannels(workspaceSid, params),
+        placeholderData: keepPreviousData,
     });
 }
 
-export function useActivities(workspaceSid: string | null) {
+export function useActivities(workspaceSid: string, params: PageParams) {
     return useQuery({
-        queryKey: ['taskRouter', workspaceSid, 'activities'],
-        queryFn: () => twilio.getActivities(workspaceSid!),
-        enabled: workspaceSid !== null,
+        queryKey: ['taskRouter', workspaceSid, 'activities', params],
+        queryFn: () => twilio.getActivities(workspaceSid, params),
+        placeholderData: keepPreviousData,
     });
 }
 
@@ -104,4 +108,14 @@ export function useBackupWorkspace() {
 
 export function useRestoreWorkspace() {
     return useMutation({ mutationFn: twilio.restoreWorkspace });
+}
+
+// --- Backups ---
+
+export function useBackups(prefix: string, enabled: boolean) {
+    return useQuery({
+        queryKey: ['backups', prefix],
+        queryFn: () => twilio.getBackups(prefix),
+        enabled,
+    });
 }

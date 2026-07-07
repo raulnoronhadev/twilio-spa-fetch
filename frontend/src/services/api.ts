@@ -1,18 +1,6 @@
-const BASE_URL = 'http://localhost:8080';
+import { getToken, clearSession } from './session';
 
-const TOKEN_KEY = 'twilio_spa_token';
-
-export function getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(token: string): void {
-    localStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken(): void {
-    localStorage.removeItem(TOKEN_KEY);
-}
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
 
 export class ApiError extends Error {
     status: number;
@@ -37,6 +25,15 @@ export async function apiRequest<T>(
             ...options?.headers,
         },
     });
+
+    // A 401 while holding a token means the session expired (or was revoked):
+    // clear it and send the user back to the login screen. A 401 without a
+    // token is a failed login attempt and must surface as a normal error.
+    if (response.status === 401 && token !== null) {
+        clearSession();
+        window.location.assign('/login');
+        throw new ApiError(401, 'Session expired');
+    }
 
     if (!response.ok) {
         let message = `HTTP error: ${response.status}`;

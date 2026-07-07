@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { Alert, Box, Chip, Typography } from '@mui/material';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import DataTable from '../../components/DataTable';
 import { useConversations } from '../../hooks/useTwilioQueries';
+import { useServerPagination } from '../../hooks/useServerPagination';
 import type { ConversationDTO } from '../../types/twilio';
 
 const stateColor = (state: string): 'success' | 'default' | 'warning' => {
@@ -25,17 +27,24 @@ const columns: GridColDef<ConversationDTO>[] = [
 ];
 
 export default function Conversations() {
-    const { data: conversations, isLoading, isError, error } = useConversations();
+    const { paginationModel, pageToken, onPaginationModelChange, registerNextPageToken } = useServerPagination();
+    const { data, isLoading, isError, error } = useConversations({ pageSize: paginationModel.pageSize, pageToken });
+    useEffect(() => registerNextPageToken(data?.nextPageToken), [data?.nextPageToken, registerNextPageToken]);
 
     return (
         <Box>
             <Typography variant="h5" mb={2}>Conversations</Typography>
             {isError && <Alert severity="error" sx={{ mb: 2 }}>{error.message}</Alert>}
             <DataTable
-                rows={conversations ?? []}
+                rows={data?.items ?? []}
                 columns={columns}
                 loading={isLoading}
                 getRowId={(row) => row.sid}
+                serverPagination={{
+                    paginationModel,
+                    onPaginationModelChange,
+                    hasNextPage: Boolean(data?.nextPageToken),
+                }}
             />
         </Box>
     );
